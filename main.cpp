@@ -1,18 +1,3 @@
-// Code for "Cascading upper bounds for triangle soup Pompeiu-Hausdorff distance",
-// paper1044, SGP 2024 submission
-
-// Example usage:
-// ./pompeiu_hausdorff A.obj B.obj 1e-8 1000000 1 
-
-// Input:
-// argv[1]: path to triangle soup A in .obj format
-// argv[2]: path to triangle soup B in .obj format
-// argv[3]: tolerance for the difference between upper and lower bound
-// argv[4]: factor to define the maximum allowed number of faces and vertices in the subdivided mesh A with respect to the number of faces and vertices of the initial mesh A
-// argv[5]: 0 (false) or 1 (true) to normalize tolerance by the length of the diagonal of A's bounding box
-
-// Output (printed): lower bound (absolute and relative to dA), upper bound (absolute and relative to dA), and timings
-
 // standard includes
 #include <stdio.h>
 #include <fstream>
