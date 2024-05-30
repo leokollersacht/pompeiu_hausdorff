@@ -1,0 +1,275 @@
+// Code for "Cascading upper bounds for triangle soup Pompeiu-Hausdorff distance",
+// paper1044, SGP 2024 submission
+
+// Example usage:
+// ./pompeiu_hausdorff A.obj B.obj 1e-8 1000000 1 
+
+// Input:
+// argv[1]: path to triangle soup A in .obj format
+// argv[2]: path to triangle soup B in .obj format
+// argv[3]: tolerance for the difference between upper and lower bound
+// argv[4]: factor to define the maximum allowed number of faces and vertices in the subdivided mesh A with respect to the number of faces and vertices of the initial mesh A
+// argv[5]: 0 (false) or 1 (true) to normalize tolerance by the length of the diagonal of A's bounding box
+
+// Output (printed): lower bound (absolute and relative to dA), upper bound (absolute and relative to dA), and timings
+
+// standard includes
+#include <stdio.h>
+#include <fstream>
+#include <time.h>
+#include <queue>
+#include <math.h>
+#include <stdlib.h>
+
+// Eigen includes
+#include <Eigen/Core>
+
+// libigl includes
+#include <igl/readOBJ.h>
+#include <igl/AABB.h>
+#include <igl/copyleft/cgal/point_mesh_squared_distance.h>
+#include <igl/writeOBJ.h>
+
+// CGAL includes
+#include <CGAL/Simple_cartesian.h>
+#include <igl/copyleft/cgal/CGAL_includes.hpp>
+
+// Pompeiu-Hausdorff distance includes
+#include "src/upper_bounds.h"
+
+// time include
+#include <sys/time.h>
+
+using namespace std;
+
+int main(int argc, char *argv[])
+{
+    if (argc!=6) {
+        cout << "Command line input should be two triangle soups A and B in .obj format; a tolerance value for the difference between upper and lower bounds; factor to define the maximum allowed number of faces and vertices in the subdivided mesh A with respect to the number of faces and vertices of the initial mesh A; 0 (false) or 1 (true) to normalize tolerance by the length of the diagonal of A's bounding box;" << endl;
+        return 0;
+    }
+
+    // timing variables
+    struct timeval start, end;
+    double time_taken;
+    double time_taken_bvh;
+    double time_taken_bounds;
+
+    gettimeofday(&start, NULL);
+
+    // load meshes (vertices and faces)
+    Eigen::MatrixXd VA, VB;
+    Eigen::MatrixXi FA, FB;
+    if (!igl::readOBJ(argv[1],VA,FA)){
+        cout << "Error loading mesh A \n" << endl;
+        return 0;
+    }
+    if (!igl::readOBJ(argv[2],VB,FB)){
+        cout << "Error loading mesh B \n" << endl;
+        return 0;
+    }
+    if (!(FA.cols()==3)){
+        cout << "Error: mesh A is not a triangle mesh \n" << endl;
+        return 0;
+    }
+    if (!(FB.cols()==3)){
+        cout << "Error: mesh B is not a triangle mesh \n" << endl;
+        return 0;
+    }
+    
+    // If normalized calculations are required, calculate the length of the diagonal of the bounding box
+    int normalize = atoi(argv[5]);
+    double dA;
+    if (normalize==1){
+        double x_min_A = VA.col(0).minCoeff();
+        double x_max_A = VA.col(0).maxCoeff();
+        double y_min_A = VA.col(1).minCoeff();
+        double y_max_A = VA.col(1).maxCoeff();
+        double z_min_A = VA.col(2).minCoeff();
+        double z_max_A = VA.col(2).maxCoeff();
+        dA = sqrt(pow(x_max_A-x_min_A,2)+pow(y_max_A-y_min_A,2)+pow(z_max_A-z_min_A,2));
+    } else {
+        dA = 1.0;
+    }
+
+    gettimeofday(&end, NULL);
+    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
+    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+    // cout << "Load meshes time: " << time_taken << " secs" << endl;
+    
+    // Put mesh B into a libigl::AABB
+    gettimeofday(&start, NULL);
+    igl::AABB<Eigen::MatrixXd,3> treeB;
+    treeB.init(VB,FB);
+    gettimeofday(&end, NULL);
+    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
+    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+    time_taken_bvh = 1000*time_taken;
+    // cout << "libigl::AABB build time: " << time_taken << " secs" << endl;
+    
+    // Start timing for initializations and beginning of the loop
+    gettimeofday(&start, NULL);
+    
+    // Initial distance queries
+    Eigen::VectorXd DV(VA.rows());
+    Eigen::MatrixXd C(VA.rows(),3);
+    Eigen::VectorXi I(VA.rows());
+    treeB.squared_distance(VB,FB,VA,DV,I,C);
+    DV = DV.cwiseSqrt();
+    double lower = DV.maxCoeff();
+
+    // initial upper bounds calculation
+    Eigen::VectorXi success_bound(FA.rows());
+    Eigen::VectorXd upper(FA.rows());
+    if (!upper_bounds(VA,FA,VB,FB,DV,I,C,lower,upper,success_bound)){
+        cout << "error in upper bound function" << endl;
+        return 0;
+    }
+    double upper_max = upper.maxCoeff();
+
+    // Enqueue triangles with upper bound greater than global lower bound
+    std::priority_queue< std::pair< double, int > , std::vector< std::pair< double, int >  >,
+    std::less< std::pair< double, int > > > Q;
+    for (int k=0 ; k<FA.rows(); k++){
+        if (upper[k]>=lower){
+            Q.emplace(upper[k],k);
+        }
+    }
+
+    // Variables needed for the main loop
+    double max_factor = atof(argv[4]);
+    int max_vertices = max_factor*VA.rows();
+    int max_faces = max_factor*FA.rows();
+    int number_of_vertices = VA.rows();
+    Eigen::MatrixXd VA_aug(max_vertices,3);
+    VA_aug.block(0,0,number_of_vertices,3) = VA;
+    int number_of_faces = FA.rows();
+    Eigen::MatrixXi FA_aug(max_faces,3);
+    FA_aug.block(0,0,number_of_faces,3) = FA;
+    Eigen::VectorXd DV_aug(max_vertices);
+    DV_aug.segment(0,number_of_vertices) = DV;
+    Eigen::VectorXi I_aug(max_vertices);
+    I_aug.segment(0,number_of_vertices) = I;
+    Eigen::VectorXd upper_aug(max_faces);
+    upper_aug.segment(0,number_of_faces) = upper;
+    Eigen::MatrixXd C_aug(max_vertices,3);
+    C_aug.block(0,0,number_of_vertices,3) = C;
+    Eigen::VectorXd upper_new(4);
+    Eigen::MatrixXi FA_new(4,3);
+    Eigen::MatrixXd VA_new(3,3);
+    Eigen::MatrixXd VA_new_2(6,3), C_new_2(6,3);
+    Eigen::VectorXd DV_new_2(6);
+    Eigen::VectorXi I_new_2(6);
+    int f = Q.top().second; 
+    int iter = 0;
+    double tol = atof(argv[3]);
+    Eigen::VectorXi success_bound_new(4);
+    
+    // Loop while tolerance is not reached
+    while(upper_max-lower>tol*dA){
+
+        // throw error if the queue is empty
+        if (Q.size()==0){
+            cout << endl << endl << endl << "ERROR: queue got empty without reaching the given tolerance" << endl << endl << endl;
+            break;
+        }
+        
+        // next triangle is the one on the top of the queue
+        f = Q.top().second;
+        // pop triangle from the top of the queue
+        Q.pop();
+
+        // new vertices (midpoint subdivision)
+        VA_aug.row(number_of_vertices) = VA_aug.row(FA_aug(f,0))/2+VA_aug.row(FA_aug(f,1))/2;
+        VA_aug.row(number_of_vertices+1) = VA_aug.row(FA_aug(f,1))/2+VA_aug.row(FA_aug(f,2))/2;
+        VA_aug.row(number_of_vertices+2) = VA_aug.row(FA_aug(f,2))/2+VA_aug.row(FA_aug(f,0))/2;
+
+        // new faces
+        FA_aug.block(number_of_faces,0,4,3) << FA_aug(f,0), number_of_vertices, number_of_vertices+2, FA_aug(f,1), number_of_vertices+1, number_of_vertices, FA_aug(f,2), number_of_vertices+2, number_of_vertices+1, number_of_vertices, number_of_vertices+1, number_of_vertices+2;
+
+        // update lower bound
+        VA_new = VA_aug.block(number_of_vertices,0,3,3);
+        treeB.squared_distance(VB,FB,VA_new,DV,I,C);
+        DV = DV.cwiseSqrt();
+        DV_aug.segment(number_of_vertices,3) = DV;
+        I_aug.segment(number_of_vertices,3) = I;
+        C_aug.block(number_of_vertices,0,3,3) = C;
+        lower = fmax(DV.maxCoeff(),lower);
+        
+        // calculate new upper bounds
+        FA_new = FA_aug.block(number_of_faces,0,4,3);
+        VA_new_2.row(0) = VA_aug.row(FA_aug(f,0));
+        VA_new_2.row(1) = VA_aug.row(FA_aug(f,1));
+        VA_new_2.row(2) = VA_aug.row(FA_aug(f,2));
+        VA_new_2.row(3) = VA_aug.row(number_of_vertices);
+        VA_new_2.row(4) = VA_aug.row(number_of_vertices+1);
+        VA_new_2.row(5) = VA_aug.row(number_of_vertices+2);
+        C_new_2.row(0) = C_aug.row(FA_aug(f,0));
+        C_new_2.row(1) = C_aug.row(FA_aug(f,1));
+        C_new_2.row(2) = C_aug.row(FA_aug(f,2));
+        C_new_2.row(3) = C_aug.row(number_of_vertices);
+        C_new_2.row(4) = C_aug.row(number_of_vertices+1);
+        C_new_2.row(5) = C_aug.row(number_of_vertices+2);
+        FA_new(0,0) = 0; FA_new(0,1) = 3; FA_new(0,2) = 5;
+        FA_new(1,0) = 3; FA_new(1,1) = 1; FA_new(1,2) = 4;
+        FA_new(2,0) = 4; FA_new(2,1) = 2; FA_new(2,2) = 5;
+        FA_new(3,0) = 3; FA_new(3,1) = 4; FA_new(3,2) = 5;
+        DV_new_2(0) = DV_aug(FA_aug(f,0));
+        DV_new_2(1) = DV_aug(FA_aug(f,1));
+        DV_new_2(2) = DV_aug(FA_aug(f,2));
+        DV_new_2.segment(3,3) = DV;
+        I_new_2(0) = I_aug(FA_aug(f,0));
+        I_new_2(1) = I_aug(FA_aug(f,1));
+        I_new_2(2) = I_aug(FA_aug(f,2));
+        I_new_2.segment(3,3) = I;
+
+        if (!upper_bounds(VA_new_2,FA_new,VB,FB,DV_new_2,I_new_2,C_new_2,lower,upper_new,success_bound_new)){
+            cout << "error in upper bound function" << endl;
+            return 0;
+        }
+        upper_aug.segment(number_of_faces,4) = upper_new;
+        upper_max = fmax(upper_new.maxCoeff(),Q.top().first);
+
+        // enqueue triangles with upper bound greater than current lower bound
+        for (int k=0; k<4; k++){
+            if (upper_new[k]>=lower){
+                Q.emplace(upper_new[k],number_of_faces+k);
+            }
+        }
+
+        // Update total number of vertices and faces (even if these faces don't get into the queue)
+        number_of_vertices = number_of_vertices + 3;
+        number_of_faces = number_of_faces + 4;
+
+        // throw error if number of faces or vertices exceeds the maximum
+        if (number_of_faces>max_faces-4 || number_of_vertices>max_vertices-3){
+            cout << "ERROR: Exceeded maximum number of faces or vertices" << endl;
+            return 0;
+        }
+
+        // update number of itrations
+        iter++;
+        
+    }
+
+    gettimeofday(&end, NULL);
+    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
+    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+    time_taken_bounds = 1000*time_taken;
+
+    // Adding final statistics print for Zheng's benchmark
+    cout << fixed;
+    cout << setprecision(12);
+    cout << "----- Results -----" << endl;
+    cout << "dA = " << dA << endl;
+    cout << "lower=" << lower << endl;
+    cout << "upper_max=" << upper_max << endl;
+    cout << "lower/dA=" << lower/dA << endl;
+    cout << "upper_max/dA=" << upper_max/dA << endl;
+    cout << "bvh_time(ms)=" << time_taken_bvh << endl;
+    cout << "bound_time(ms)=" << time_taken_bounds << endl;
+    cout << "----------------------------------------" << endl;
+
+    return 1;
+    
+}
