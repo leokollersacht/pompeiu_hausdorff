@@ -24,7 +24,7 @@ int upper_bounds(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, const E
     }
     
     // flags
-    bool upper_bound_done[FA.rows()];
+    std::vector<bool> upper_bound_done(FA.rows());
 
     // Edge lengths (needed for u1 and u2)
     Eigen::VectorXd e(3);
