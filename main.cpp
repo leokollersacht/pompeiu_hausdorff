@@ -23,7 +23,11 @@
 #include "src/upper_bounds.h"
 
 // time include
+#if ! _MSC_VER
 #include <sys/time.h>
+#else
+#include "src/gettimeofday.h"
+#endif
 
 using namespace std;
 
@@ -61,7 +65,7 @@ int main(int argc, char *argv[])
         cout << "Error: mesh B is not a triangle mesh \n" << endl;
         return 0;
     }
-    
+
     // If normalized calculations are required, calculate the length of the diagonal of the bounding box
     int normalize = atoi(argv[5]);
     double dA;
@@ -81,7 +85,7 @@ int main(int argc, char *argv[])
     time_taken = (end.tv_sec - start.tv_sec) * 1e6;
     time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
     // cout << "Load meshes time: " << time_taken << " secs" << endl;
-    
+
     // Put mesh B into a libigl::AABB
     gettimeofday(&start, NULL);
     igl::AABB<Eigen::MatrixXd,3> treeB;
@@ -91,10 +95,10 @@ int main(int argc, char *argv[])
     time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
     time_taken_bvh = 1000*time_taken;
     // cout << "libigl::AABB build time: " << time_taken << " secs" << endl;
-    
+
     // Start timing for initializations and beginning of the loop
     gettimeofday(&start, NULL);
-    
+
     // Initial distance queries
     Eigen::VectorXd DV(VA.rows());
     Eigen::MatrixXd C(VA.rows(),3);
@@ -145,11 +149,11 @@ int main(int argc, char *argv[])
     Eigen::MatrixXd VA_new_2(6,3), C_new_2(6,3);
     Eigen::VectorXd DV_new_2(6);
     Eigen::VectorXi I_new_2(6);
-    int f = Q.top().second; 
+    int f = Q.top().second;
     int iter = 0;
     double tol = atof(argv[3]);
     Eigen::VectorXi success_bound_new(4);
-    
+
     // Loop while tolerance is not reached
     while(upper_max-lower>tol*dA){
 
@@ -158,7 +162,7 @@ int main(int argc, char *argv[])
             cout << endl << endl << endl << "ERROR: queue got empty without reaching the given tolerance" << endl << endl << endl;
             break;
         }
-        
+
         // next triangle is the one on the top of the queue
         f = Q.top().second;
         // pop triangle from the top of the queue
@@ -180,7 +184,7 @@ int main(int argc, char *argv[])
         I_aug.segment(number_of_vertices,3) = I;
         C_aug.block(number_of_vertices,0,3,3) = C;
         lower = fmax(DV.maxCoeff(),lower);
-        
+
         // calculate new upper bounds
         FA_new = FA_aug.block(number_of_faces,0,4,3);
         VA_new_2.row(0) = VA_aug.row(FA_aug(f,0));
@@ -234,7 +238,7 @@ int main(int argc, char *argv[])
 
         // update number of itrations
         iter++;
-        
+
     }
 
     gettimeofday(&end, NULL);
@@ -256,5 +260,5 @@ int main(int argc, char *argv[])
     cout << "----------------------------------------" << endl;
 
     return 1;
-    
+
 }
