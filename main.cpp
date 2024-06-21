@@ -123,8 +123,18 @@ int main(int argc, char *argv[])
 
     // Variables needed for the main loop
     double max_factor = atof(argv[4]);
-    int max_vertices = max_factor*VA.rows();
+    int max_vertices;
+    if (max_factor*VA.rows()<INT_MAX){
+        max_vertices = max_factor*VA.rows();
+    } else {
+        max_vertices = INT_MAX;
+    }
     int max_faces = max_factor*FA.rows();
+    if (max_factor*FA.rows()<INT_MAX){
+        max_faces = max_factor*FA.rows();
+    } else {
+        max_faces = INT_MAX;
+    }
     int number_of_vertices = VA.rows();
     Eigen::MatrixXd VA_aug(max_vertices,3);
     VA_aug.block(0,0,number_of_vertices,3) = VA;
