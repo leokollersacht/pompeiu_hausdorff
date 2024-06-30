@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
   src/upper_bounds.cpp
   src/kang_upper_bound.cpp
   src/kang_intersect_edge_and_bisector.cpp
-  src/bisector_of_two_points.cpp)
+  src/bisector_of_two_points.cpp
+  src/gettimeofday.cpp)
 
 target_link_libraries(${PROJECT_NAME} igl::core igl_copyleft::cgal)

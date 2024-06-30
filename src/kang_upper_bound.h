@@ -20,7 +20,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/squared_distance_3.h>
 #include "kang_intersect_edge_and_bisector.h"
-#include <sys/time.h>
+
 
 using namespace std;
 
