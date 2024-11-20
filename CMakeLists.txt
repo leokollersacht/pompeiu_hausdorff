@@ -6,7 +6,6 @@ SET(CMAKE_BUILD_TYPE Release)
 
 # Libigl
 include(libigl)
-igl_include(copyleft/cgal)
 
 file(GLOB SRCFILES "${PROJECT_SOURCE_DIR}/*.cpp")
 
@@ -18,4 +17,4 @@ add_executable(${PROJECT_NAME}
   src/bisector_of_two_points.cpp
   src/gettimeofday.cpp)
 
-target_link_libraries(${PROJECT_NAME} igl::core igl_copyleft::cgal)
+target_link_libraries(${PROJECT_NAME} igl::core)
