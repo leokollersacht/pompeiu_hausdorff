@@ -3,7 +3,7 @@ Code for "Cascading upper bounds for triangle soup Pompeiu-Hausdorff distance" (
 Authors: Leonardo Sacht and Alec Jacobson. \
 \
 Note 1: This code has been tested on a Mac OS machine \
-Note 2: Command "cmake .." below will fetch all the necessary libraries (Eigen, libigl, CGAL, boost). The size of these libraries is approximately 2GB. \
+Note 2: Command "cmake .." below will fetch all the necessary libraries (Eigen, libigl). The size of these libraries is approximately 70 MB. \
 \
 -------- Compilation --------\
 \
