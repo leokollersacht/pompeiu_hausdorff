@@ -12,12 +12,7 @@
 // libigl includes
 #include <igl/readOBJ.h>
 #include <igl/AABB.h>
-#include <igl/copyleft/cgal/point_mesh_squared_distance.h>
 #include <igl/writeOBJ.h>
-
-// CGAL includes
-#include <CGAL/Simple_cartesian.h>
-#include <igl/copyleft/cgal/CGAL_includes.hpp>
 
 // Pompeiu-Hausdorff distance includes
 #include "src/upper_bounds.h"

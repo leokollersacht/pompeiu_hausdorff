@@ -12,8 +12,8 @@
 // u: #faces(A) x 1 Eigen vector containing the upper bound for the Pompeiu-Hausdorff distance from each triangle on mesh A to mesh B
 
 #include "kang_upper_bound.h"
+#include <igl/point_simplex_squared_distance.h>
 
-typedef CGAL::Simple_cartesian<double> K;
 
 int kang_upper_bound(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, const Eigen::MatrixXd & VB, const Eigen::MatrixXi & FB, const Eigen::MatrixXd & DV, const Eigen::VectorXi & I, Eigen::VectorXd & u){
     
@@ -32,10 +32,6 @@ int kang_upper_bound(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, con
     
     // Barycenter and midpoints
     Eigen::MatrixXd B(1,3), m1(1,3), m2(1,3);
-    
-    // Query point and triangle (for point-triangle distances)
-    K::Point_3 P_Query;
-    K::Triangle_3 Tri;
     
     // Point-triangle squared distances
     double Query2_sqrD, Query3_sqrD;
@@ -196,28 +192,22 @@ int kang_upper_bound(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, con
                 // vertex distances
                 hb = max(max(DV(FA(k,0)), DV(FA(k,1))), DV(FA(k,2)));
                 
+                Eigen::RowVector3d _;
+
                 // Using the notation in the paper: distance from b_1 to r_{11}
-                P_Query = K::Point_3(P_int(0,0),P_int(0,1),P_int(0,2));
-                Tri = K::Triangle_3(K::Point_3(VB(FB(T1,0),0),VB(FB(T1,0),1),VB(FB(T1,0),2)), K::Point_3(VB(FB(T1,1),0),VB(FB(T1,1),1),VB(FB(T1,1),2)), K::Point_3(VB(FB(T1,2),0),VB(FB(T1,2),1),VB(FB(T1,2),2)));
-                Query2_sqrD = CGAL::squared_distance(P_Query,Tri);
+                igl::point_simplex_squared_distance<3>(P_int.row(0).eval(),VB,FB,T1,Query2_sqrD,_);
                 hb = max(hb,sqrt(Query2_sqrD));
                     
                 // Using the notation in the paper: distance from b_2 to r_{21}
-                P_Query = K::Point_3(P_int(1,0),P_int(1,1),P_int(1,2));
-                Tri = K::Triangle_3(K::Point_3(VB(FB(T1,0),0),VB(FB(T1,0),1),VB(FB(T1,0),2)), K::Point_3(VB(FB(T1,1),0),VB(FB(T1,1),1),VB(FB(T1,1),2)), K::Point_3(VB(FB(T1,2),0),VB(FB(T1,2),1),VB(FB(T1,2),2)));
-                Query2_sqrD = CGAL::squared_distance(P_Query,Tri);
+                igl::point_simplex_squared_distance<3>(P_int.row(1).eval(),VB,FB,T1,Query2_sqrD,_);
                 hb = max(hb,sqrt(Query2_sqrD));
                 
                 // Using the notation in the paper: distance from b_1 to r_{12}
-                P_Query = K::Point_3(P_int(0,0),P_int(0,1),P_int(0,2));
-                Tri = K::Triangle_3(K::Point_3(VB(FB(T2,0),0),VB(FB(T2,0),1),VB(FB(T2,0),2)), K::Point_3(VB(FB(T2,1),0),VB(FB(T2,1),1),VB(FB(T2,1),2)), K::Point_3(VB(FB(T2,2),0),VB(FB(T2,2),1),VB(FB(T2,2),2)));
-                Query2_sqrD = CGAL::squared_distance(P_Query,Tri);
+                igl::point_simplex_squared_distance<3>(P_int.row(0).eval(),VB,FB,T2,Query2_sqrD,_);
                 hb = max(hb,sqrt(Query2_sqrD));
                 
                 // Using the notation in the paper: distance from b_2 to r_{22}
-                P_Query = K::Point_3(P_int(1,0),P_int(1,1),P_int(1,2));
-                Tri = K::Triangle_3(K::Point_3(VB(FB(T2,0),0),VB(FB(T2,0),1),VB(FB(T2,0),2)), K::Point_3(VB(FB(T2,1),0),VB(FB(T2,1),1),VB(FB(T2,1),2)), K::Point_3(VB(FB(T2,2),0),VB(FB(T2,2),1),VB(FB(T2,2),2)));
-                Query2_sqrD = CGAL::squared_distance(P_Query,Tri);
+                igl::point_simplex_squared_distance<3>(P_int.row(1).eval(),VB,FB,T2,Query2_sqrD,_);
                 
                 // Return upper bound
                 u(k) = max(hb,sqrt(Query2_sqrD));
@@ -237,6 +227,7 @@ int kang_upper_bound(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, con
                 // barycenter of the triangle from mesh A
                 B = (VA.row(FA(k,0))+VA.row(FA(k,1))+VA.row(FA(k,2)))/3;
                 
+                Eigen::RowVector3d _;
                 // loop over its vertices
                 for (i=0; i<3; i++){
                     
@@ -247,25 +238,21 @@ int kang_upper_bound(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, con
                     hc = max(hc,DV(FA(k,i)));
                     
                     // distance from c to r_{ic}
-                    P_Query = K::Point_3(B(0,0),B(0,1),B(0,2));
-                    Tri = K::Triangle_3(K::Point_3(VB(FB(T,0),0),VB(FB(T,0),1),VB(FB(T,0),2)), K::Point_3(VB(FB(T,1),0),VB(FB(T,1),1),VB(FB(T,1),2)), K::Point_3(VB(FB(T,2),0),VB(FB(T,2),1),VB(FB(T,2),2)));
-                    Query3_sqrD = CGAL::squared_distance(P_Query,Tri);
+                    igl::point_simplex_squared_distance<3>(B.row(0).eval(),VB,FB,T,Query3_sqrD,_);
                     
                     // update upper bound
                     hc = max(hc,sqrt(Query3_sqrD));
                     
                     // distance from m_i to r_{ia}
                     m1 = (VA.row(FA(k,(i)%3))+VA.row(FA(k,(i+1)%3)))/2;
-                    P_Query = K::Point_3(m1(0,0),m1(0,1),m1(0,2));
-                    Query3_sqrD = CGAL::squared_distance(P_Query,Tri);
+                    igl::point_simplex_squared_distance<3>(m1.row(0).eval(),VB,FB,T,Query3_sqrD,_);
                     
                     // update upper bound
                     hc = max(hc,sqrt(Query3_sqrD));
 
                     // distance from m_{i+2} to r_{ib}
                     m2 = (VA.row(FA(k,(i)%3))+VA.row(FA(k,(i+2)%3)))/2;
-                    P_Query = K::Point_3(m2(0,0),m2(0,1),m2(0,2));
-                    Query3_sqrD = CGAL::squared_distance(P_Query,Tri);
+                    igl::point_simplex_squared_distance<3>(m2.row(0).eval(),VB,FB,T,Query3_sqrD,_);
                     
                     // update upper bound
                     hc = max(hc,sqrt(Query3_sqrD));
@@ -275,8 +262,8 @@ int kang_upper_bound(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, con
                         if (j==i){
                             ha_partial(i) = max(ha_partial(i),DV(FA(k,i)));
                         } else {
-                            P_Query = K::Point_3(VA(FA(k,j),0),VA(FA(k,j),1),VA(FA(k,j),2));
-                            Query3_sqrD = CGAL::squared_distance(P_Query,Tri);
+                            Eigen::RowVector3d P_query(VA(FA(k,j),0),VA(FA(k,j),1),VA(FA(k,j),2));
+                            igl::point_simplex_squared_distance<3>(P_query,VB,FB,T,Query3_sqrD,_);
                             ha_partial(i) = max(ha_partial(i),sqrt(Query3_sqrD));
                         }
                     }
