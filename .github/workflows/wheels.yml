@@ -11,7 +11,7 @@ on:
 
 jobs:
   build_sdist:
-    name: Build SDist
+    name: sdist
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
