@@ -17,6 +17,11 @@
   #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
 #endif
 
+typedef struct timeval {
+    long tv_sec;
+    long tv_usec;
+} timeval;
+
 struct timezone
 {
   int  tz_minuteswest; /* minutes W of Greenwich */
