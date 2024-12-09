@@ -10,6 +10,7 @@ import pathlib
 def test_example():
     this_dir = pathlib.Path(__file__).parent.resolve()
     # ./pompeiu_hausdorff ../meshes/107100.obj ../meshes/107100_sf.obj 1e-8 1000000 1 \
+    print(f"this_dir: {this_dir}")
     VA, FA = igl.read_triangle_mesh(f"{this_dir}/../meshes/107100.obj")
     VB, FB = igl.read_triangle_mesh(f"{this_dir}/../meshes/107100_sf.obj")
     tol = 1e-8
