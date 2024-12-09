@@ -10,6 +10,25 @@ on:
       - published
 
 jobs:
+  build_sdist:
+    name: Build SDist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - name: Check metadata
+      run: pipx run twine check dist/*
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist-sdist
+        path: dist/*.tar.gz
+
   build_wheel:
     strategy:
       fail-fast: false
@@ -38,7 +57,7 @@ jobs:
           CIBW_SKIP: "*-musllinux* pp*"
           CIBW_TEST_COMMAND: "pytest -s {project}/tests/test.py"
           CIBW_TEST_REQUIRES: pytest
-          MACOSX_DEPLOYMENT_TARGET: 11.00
+          MACOSX_DEPLOYMENT_TARGET: 14.00
           CIBW_BUILD_VERBOSITY: 2
 
       - uses: actions/upload-artifact@v4
