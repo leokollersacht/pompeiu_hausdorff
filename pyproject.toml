@@ -44,7 +44,7 @@ test-requires = ["pytest","libigl","numpy"]
 test-command = "pytest --tb=long --capture=no -s {project}/tests/test.py"
 
 # Don't test Python 3.8 wheels on macOS/arm64
-test-skip="cp38-macosx_*:arm64"
+test-skip="cp38-macosx_*:arm64 cp313-*"
 
 # Needed for full C++17 support
 [tool.cibuildwheel.macos.environment]
