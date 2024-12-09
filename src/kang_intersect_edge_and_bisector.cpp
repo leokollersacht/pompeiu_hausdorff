@@ -10,7 +10,7 @@
 
 #include "kang_intersect_edge_and_bisector.h"
 
-int kang_intersect_edge_and_bisector(const Eigen::Vector3d & P1, const Eigen::Vector3d & P2, const Eigen::MatrixXd & VB, Eigen::Vector3d & P_int){
+int kang_intersect_edge_and_bisector(const Eigen::Vector3d & P1, const Eigen::Vector3d & P2, const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB, Eigen::Vector3d & P_int){
     
     Eigen::Vector3d v1, v2, cross_product, coeff_abc;
     double a1, b1, c1, d1, a2, b2, c2, d2, a_plus, b_plus, c_plus, d_plus, a_minus, b_minus, c_minus, d_minus, a_bisec, b_bisec, c_bisec, d_bisec, r1, r2, x0, y0, z0, x1, y1, z1, t;

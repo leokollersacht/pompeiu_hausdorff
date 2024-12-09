@@ -19,10 +19,10 @@ std::tuple<
   double /* time_taken_bvh */,
   double /* time_taken_bounds */>
 pompeiu_hausdorff(
-  const Eigen::MatrixXd & VA,
-  const Eigen::MatrixXi & FA,
-  const Eigen::MatrixXd & VB,
-  const Eigen::MatrixXi & FB,
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VA,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FA,
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
   const double tol = 1e-8,
   const double max_factor = 1000000,
   const bool normalize = true);

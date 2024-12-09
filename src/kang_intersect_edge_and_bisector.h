@@ -17,4 +17,4 @@
 
 using namespace std;
 
-int kang_intersect_edge_and_bisector(const Eigen::Vector3d & P1, const Eigen::Vector3d & P2, const Eigen::MatrixXd & VB, Eigen::Vector3d & P_int);
+int kang_intersect_edge_and_bisector(const Eigen::Vector3d & P1, const Eigen::Vector3d & P2, const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB, Eigen::Vector3d & P_int);

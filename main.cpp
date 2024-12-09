@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
       std::chrono::duration<double>(
           std::chrono::system_clock::now().time_since_epoch()).count();
     // load meshes (vertices and faces)
+    // Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VA, VB;
+    // Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> FA, FB;
     Eigen::MatrixXd VA, VB;
     Eigen::MatrixXi FA, FB;
     if (!igl::readOBJ(argv[1],VA,FA)){

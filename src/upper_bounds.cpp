@@ -16,7 +16,7 @@
 
 #include "upper_bounds.h"
 
-int upper_bounds(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, const Eigen::MatrixXd & VB, const Eigen::MatrixXi & FB, const Eigen::MatrixXd & DV, const Eigen::VectorXi & I, const Eigen::MatrixXd & C, const double & lower, Eigen::VectorXd & u, Eigen::VectorXi & success_bound){
+int upper_bounds(const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VA, const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FA, const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB, const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB, const Eigen::VectorXd & DV, const Eigen::VectorXi & I, const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & C, const double & lower, Eigen::VectorXd & u, Eigen::VectorXi & success_bound){
     
     if (u.rows()!=FA.rows()){
         cout << "upper_bounds.cpp: Upper bound vector has been passed with wrong number of entries (not the same as the number of triangles)" << endl;
@@ -30,9 +30,9 @@ int upper_bounds(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, const E
     Eigen::VectorXd e(3);
     
     // uKang variables
-    Eigen::MatrixXd VAKang(3,3);
-    Eigen::MatrixXi FAKang(1,3);
-    Eigen::MatrixXd DVKang(3,1);
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VAKang(3,3);
+    Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> FAKang(1,3);
+    Eigen::VectorXd DVKang(3);
     Eigen::VectorXi IKang(3);
     Eigen::VectorXd uKang(1);
     
