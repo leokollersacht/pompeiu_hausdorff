@@ -13,8 +13,6 @@ def test_example():
     print(f"this_dir: {this_dir}")
     VA, FA = igl.read_triangle_mesh(f"{this_dir}/../meshes/107100.obj")
     VB, FB = igl.read_triangle_mesh(f"{this_dir}/../meshes/107100_sf.obj")
-    print(f"VA: {VA.shape}, FA: {FA.shape}")
-    print(f"VB: {VB.shape}, FB: {FB.shape}")
     tol = 1e-8
     max_factor = 1000000.0
     normalize = True

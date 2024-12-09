@@ -37,7 +37,6 @@ wheel.py-api = "cp312"
 [tool.cibuildwheel]
 # Necessary to see build output from the actual compilation
 build-verbosity = 3
-environment = "CMAKE_BUILD_TYPE=Debug CFLAGS=-g CXXFLAGS=-g"
 
 # Run pytest to ensure that the package was correctly built
 test-requires = ["pytest","libigl","numpy"]

@@ -24,14 +24,12 @@ pompeiu_hausdorff(
   const double max_factor,
   const bool normalize)
 {
-  printf("pompeiu_hausdorff(1)\n");
     // timing variables
     double t_start, t_end;
     double time_taken;
     double time_taken_bvh;
     double time_taken_bounds;
 
-  printf("pompeiu_hausdorff(2)\n");
     double dA;
     if (normalize==1){
         double x_min_A = VA.col(0).minCoeff();
@@ -46,7 +44,6 @@ pompeiu_hausdorff(
     }
 
 
-  printf("pompeiu_hausdorff(3)\n");
     // Put mesh B into a libigl::AABB
     t_start = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     igl::AABB<Eigen::MatrixXd,3> treeB;
@@ -58,7 +55,6 @@ pompeiu_hausdorff(
     // Start timing for initializations and beginning of the loop
     t_start = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 
-  printf("pompeiu_hausdorff(4)\n");
     // Initial distance queries
     Eigen::VectorXd DV(VA.rows());
     Eigen::MatrixXd C(VA.rows(),3);
@@ -67,7 +63,6 @@ pompeiu_hausdorff(
     DV = DV.cwiseSqrt();
     double lower = DV.maxCoeff();
 
-  printf("pompeiu_hausdorff(5)\n");
     // initial upper bounds calculation
     Eigen::VectorXi success_bound(FA.rows());
     Eigen::VectorXd upper(FA.rows());
@@ -85,7 +80,6 @@ pompeiu_hausdorff(
         }
     }
 
-  printf("pompeiu_hausdorff(6)\n");
     // Variables needed for the main loop
     int max_vertices;
     if (max_factor*VA.rows()<INT_MAX){
@@ -141,7 +135,6 @@ pompeiu_hausdorff(
     Eigen::VectorXi success_bound_new(4);
 
     // Loop while tolerance is not reached
-  printf("pompeiu_hausdorff(8)\n");
     while(upper_max-lower>tol*dA){
 
         // throw error if the queue is empty
@@ -246,11 +239,9 @@ pompeiu_hausdorff(
         iter++;
 
     }
-  printf("pompeiu_hausdorff(9)\n");
 
     t_end = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     time_taken_bounds = 1000*(t_end - t_start);
-  printf("pompeiu_hausdorff(10)\n");
 
     return std::make_tuple(lower, upper_max, dA, time_taken_bvh, time_taken_bounds);
 }
