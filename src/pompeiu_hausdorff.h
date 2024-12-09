@@ -1,6 +1,9 @@
 #include <Eigen/Core>
 #include <tuple>
 
+/// Compute lower and upper bounds on the Pompeiu-Hausdorff distance between two
+/// meshes A and B
+///
 /// @param[in] VA  #VA by 3 list of vertex positions of mesh A 
 /// @param[in] FA  #FA by 3 list of triangle indices into VA
 /// @param[in] VB  #VB by 3 list of vertex positions of mesh B

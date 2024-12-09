@@ -1,0 +1,73 @@
+name: Wheels
+
+on:
+  pull_request:
+  push:
+    branches:
+     - main
+  release:
+    types:
+      - published
+
+jobs:
+  build_sdist:
+    name: sdist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - name: Check metadata
+      run: pipx run twine check dist/*
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist-sdist
+        path: dist/*.tar.gz
+
+  build_wheels:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-13, macos-14, windows-2022]
+
+    name: ${{matrix.os}}
+    runs-on: ${{matrix.os}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode version
+        if: runner.os == 'macOS'
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.2'
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.21.3
+        env:
+          CIBW_ARCHS_LINUX: auto64
+          CIBW_ARCHS_WINDOWS: auto64
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_SKIP: "*-musllinux* pp*"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{matrix.os}}
+          path: ./wheelhouse/*.whl
+
+  merge_wheels:
+    name: Merge wheels into a combined artifact
+    runs-on: ubuntu-latest
+    needs: [build_wheels, build_sdist]
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: dist
+          pattern: dist-*

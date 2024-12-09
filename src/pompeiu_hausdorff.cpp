@@ -6,13 +6,8 @@
 // Pompeiu-Hausdorff distance includes
 #include "upper_bounds.h"
 
-// time include
-#if ! _MSC_VER
-#include <sys/time.h>
-#else
-#include "src/gettimeofday.h"
-#endif
 
+#include <chrono>
 
 std::tuple<
   double /* lower */,
@@ -30,7 +25,7 @@ pompeiu_hausdorff(
   const bool normalize)
 {
     // timing variables
-    struct timeval start, end;
+    double t_start, t_end;
     double time_taken;
     double time_taken_bvh;
     double time_taken_bounds;
@@ -50,17 +45,15 @@ pompeiu_hausdorff(
 
 
     // Put mesh B into a libigl::AABB
-    gettimeofday(&start, NULL);
+    t_start = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     igl::AABB<Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor>,3> treeB;
     treeB.init(VB,FB);
-    gettimeofday(&end, NULL);
-    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
-    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
-    time_taken_bvh = 1000*time_taken;
+    t_end = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+    time_taken_bvh = 1000*(t_end - t_start);
     // cout << "libigl::AABB build time: " << time_taken << " secs" << endl;
 
     // Start timing for initializations and beginning of the loop
-    gettimeofday(&start, NULL);
+    t_start = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 
     // Initial distance queries
     Eigen::VectorXd DV(VA.rows());
@@ -101,19 +94,36 @@ pompeiu_hausdorff(
         max_faces = INT_MAX;
     }
     int number_of_vertices = VA.rows();
-    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VA_aug(max_vertices,3);
-    VA_aug.block(0,0,number_of_vertices,3) = VA;
     int number_of_faces = FA.rows();
-    Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> FA_aug(max_faces,3);
-    FA_aug.block(0,0,number_of_faces,3) = FA;
-    Eigen::VectorXd DV_aug(max_vertices);
-    DV_aug.segment(0,number_of_vertices) = DV;
-    Eigen::VectorXi I_aug(max_vertices);
-    I_aug.segment(0,number_of_vertices) = I;
-    Eigen::VectorXd upper_aug(max_faces);
-    upper_aug.segment(0,number_of_faces) = upper;
-    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> C_aug(max_vertices,3);
-    C_aug.block(0,0,number_of_vertices,3) = C;
+
+    // VA_aug.rows() → current number of vertices allocated
+    //   C_aug
+    //   DV_aug
+    //   I_aug
+    // FA_aug.rows() → current number of faces allocated
+    //   upper_aug
+    Eigen::MatrixXd VA_aug(std::min(16*(number_of_vertices+1),max_vertices),3);
+    if(VA_aug.rows() < number_of_vertices)
+    {
+      throw std::runtime_error("Exceeded maximum number of vertices");
+    }
+    VA_aug.topRows(VA.rows()) = VA;
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> C_aug(VA_aug.rows(),3);
+    Eigen::VectorXd DV_aug(VA_aug.rows());
+    Eigen::VectorXi I_aug(VA_aug.rows());
+    C_aug.topRows(VA.rows()) = C;
+    DV_aug.head(VA.rows()) = DV;
+    I_aug.head(VA.rows()) = I;
+
+    Eigen::MatrixXi FA_aug(std::min(16*(number_of_faces+1),max_faces),3);
+    if(FA_aug.rows() < number_of_faces)
+    {
+      throw std::runtime_error("Exceeded maximum number of faces");
+    }
+    FA_aug.topRows(FA.rows()) = FA;
+    Eigen::VectorXd upper_aug(FA_aug.rows());
+    upper_aug.head(FA.rows()) = upper;
+
     Eigen::VectorXd upper_new(4);
     Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> FA_new(4,3);
     Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VA_new(3,3);
@@ -139,11 +149,32 @@ pompeiu_hausdorff(
         Q.pop();
 
         // new vertices (midpoint subdivision)
+        if(number_of_vertices+3 > max_vertices)
+        {
+          throw std::runtime_error("Exceeded maximum number of vertices");
+        }
+        if( (number_of_vertices+3) > VA_aug.rows())
+        {
+          VA_aug.conservativeResize(VA_aug.rows()*2,Eigen::NoChange);
+          C_aug.conservativeResize(VA_aug.rows(),Eigen::NoChange);
+          DV_aug.conservativeResize(VA_aug.rows());
+          I_aug.conservativeResize(VA_aug.rows());
+        }
         VA_aug.row(number_of_vertices) = VA_aug.row(FA_aug(f,0))/2+VA_aug.row(FA_aug(f,1))/2;
         VA_aug.row(number_of_vertices+1) = VA_aug.row(FA_aug(f,1))/2+VA_aug.row(FA_aug(f,2))/2;
         VA_aug.row(number_of_vertices+2) = VA_aug.row(FA_aug(f,2))/2+VA_aug.row(FA_aug(f,0))/2;
 
         // new faces
+        if(number_of_faces+4 > max_faces)
+        {
+          throw std::runtime_error("Exceeded maximum number of faces");
+        }
+        if( (number_of_faces+4) > FA_aug.rows())
+        {
+          FA_aug.conservativeResize(FA_aug.rows()*2,Eigen::NoChange);
+          upper_aug.conservativeResize(FA_aug.rows());
+        }
+
         FA_aug.block(number_of_faces,0,4,3) << FA_aug(f,0), number_of_vertices, number_of_vertices+2, FA_aug(f,1), number_of_vertices+1, number_of_vertices, FA_aug(f,2), number_of_vertices+2, number_of_vertices+1, number_of_vertices, number_of_vertices+1, number_of_vertices+2;
 
         // update lower bound
@@ -209,10 +240,8 @@ pompeiu_hausdorff(
 
     }
 
-    gettimeofday(&end, NULL);
-    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
-    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
-    time_taken_bounds = 1000*time_taken;
+    t_end = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+    time_taken_bounds = 1000*(t_end - t_start);
 
     return std::make_tuple(lower, upper_max, dA, time_taken_bvh, time_taken_bounds);
 }
