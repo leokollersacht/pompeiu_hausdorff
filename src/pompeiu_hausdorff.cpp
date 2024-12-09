@@ -6,13 +6,8 @@
 // Pompeiu-Hausdorff distance includes
 #include "upper_bounds.h"
 
-// time include
-#if ! _MSC_VER
-#include <sys/time.h>
-#else
-#include "gettimeofday.h"
-#endif
 
+#include <chrono>
 
 std::tuple<
   double /* lower */,
@@ -31,7 +26,7 @@ pompeiu_hausdorff(
 {
   printf("pompeiu_hausdorff(1)\n");
     // timing variables
-    struct timeval start, end;
+    double t_start, t_end;
     double time_taken;
     double time_taken_bvh;
     double time_taken_bounds;
@@ -53,17 +48,15 @@ pompeiu_hausdorff(
 
   printf("pompeiu_hausdorff(3)\n");
     // Put mesh B into a libigl::AABB
-    gettimeofday(&start, NULL);
+    t_start = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
     igl::AABB<Eigen::MatrixXd,3> treeB;
     treeB.init(VB,FB);
-    gettimeofday(&end, NULL);
-    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
-    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
-    time_taken_bvh = 1000*time_taken;
+    t_end = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+    time_taken_bvh = 1000*(t_end - t_start);
     // cout << "libigl::AABB build time: " << time_taken << " secs" << endl;
 
     // Start timing for initializations and beginning of the loop
-    gettimeofday(&start, NULL);
+    t_start = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
 
   printf("pompeiu_hausdorff(4)\n");
     // Initial distance queries
@@ -218,10 +211,8 @@ pompeiu_hausdorff(
     }
   printf("pompeiu_hausdorff(9)\n");
 
-    gettimeofday(&end, NULL);
-    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
-    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
-    time_taken_bounds = 1000*time_taken;
+    t_end = std::chrono::duration<double>(std::chrono::system_clock::now().time_since_epoch()).count();
+    time_taken_bounds = 1000*(t_end - t_start);
   printf("pompeiu_hausdorff(10)\n");
 
     return std::make_tuple(lower, upper_max, dA, time_taken_bvh, time_taken_bounds);

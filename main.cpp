@@ -13,6 +13,8 @@
 #include "src/gettimeofday.h"
 #endif
 
+#include <chrono>
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -22,9 +24,10 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    struct timeval start, end;
-    gettimeofday(&start, NULL);
 
+    double t_start = 
+      std::chrono::duration<double>(
+          std::chrono::system_clock::now().time_since_epoch()).count();
     // load meshes (vertices and faces)
     Eigen::MatrixXd VA, VB;
     Eigen::MatrixXi FA, FB;
@@ -45,10 +48,10 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    gettimeofday(&end, NULL);
-    double time_taken;
-    time_taken = (end.tv_sec - start.tv_sec) * 1e6;
-    time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
+    double t_end = 
+      std::chrono::duration<double>(
+          std::chrono::system_clock::now().time_since_epoch()).count();
+    time_taken = t_end - t_start;
     // cout << "Load meshes time: " << time_taken << " secs" << endl;
 
     // If normalized calculations are required, calculate the length of the diagonal of the bounding box
