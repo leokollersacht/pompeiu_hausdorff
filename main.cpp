@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     double t_end = 
       std::chrono::duration<double>(
           std::chrono::system_clock::now().time_since_epoch()).count();
-    time_taken = t_end - t_start;
+    double time_taken = t_end - t_start;
     // cout << "Load meshes time: " << time_taken << " secs" << endl;
 
     // If normalized calculations are required, calculate the length of the diagonal of the bounding box

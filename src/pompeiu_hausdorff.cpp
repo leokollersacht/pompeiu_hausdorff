@@ -99,21 +99,37 @@ pompeiu_hausdorff(
     } else {
         max_faces = INT_MAX;
     }
-  printf("pompeiu_hausdorff(7)\n");
     int number_of_vertices = VA.rows();
-    Eigen::MatrixXd VA_aug(max_vertices,3);
-    VA_aug.block(0,0,number_of_vertices,3) = VA;
     int number_of_faces = FA.rows();
-    Eigen::MatrixXi FA_aug(max_faces,3);
-    FA_aug.block(0,0,number_of_faces,3) = FA;
-    Eigen::VectorXd DV_aug(max_vertices);
-    DV_aug.segment(0,number_of_vertices) = DV;
-    Eigen::VectorXi I_aug(max_vertices);
-    I_aug.segment(0,number_of_vertices) = I;
-    Eigen::VectorXd upper_aug(max_faces);
-    upper_aug.segment(0,number_of_faces) = upper;
-    Eigen::MatrixXd C_aug(max_vertices,3);
-    C_aug.block(0,0,number_of_vertices,3) = C;
+
+    // VA_aug.rows() → current number of vertices allocated
+    //   C_aug
+    //   DV_aug
+    //   I_aug
+    // FA_aug.rows() → current number of faces allocated
+    //   upper_aug
+    Eigen::MatrixXd VA_aug(std::min(16*(number_of_vertices+1),max_vertices),3);
+    if(VA_aug.rows() < number_of_vertices)
+    {
+      throw std::runtime_error("Exceeded maximum number of vertices");
+    }
+    VA_aug.topRows(VA.rows()) = VA;
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> C_aug(VA_aug.rows(),3);
+    Eigen::VectorXd DV_aug(VA_aug.rows());
+    Eigen::VectorXi I_aug(VA_aug.rows());
+    C_aug.topRows(VA.rows()) = C;
+    DV_aug.head(VA.rows()) = DV;
+    I_aug.head(VA.rows()) = I;
+
+    Eigen::MatrixXi FA_aug(std::min(16*(number_of_faces+1),max_faces),3);
+    if(FA_aug.rows() < number_of_faces)
+    {
+      throw std::runtime_error("Exceeded maximum number of faces");
+    }
+    FA_aug.topRows(FA.rows()) = FA;
+    Eigen::VectorXd upper_aug(FA_aug.rows());
+    upper_aug.head(FA.rows()) = upper;
+
     Eigen::VectorXd upper_new(4);
     Eigen::MatrixXi FA_new(4,3);
     Eigen::MatrixXd VA_new(3,3);
@@ -140,11 +156,32 @@ pompeiu_hausdorff(
         Q.pop();
 
         // new vertices (midpoint subdivision)
+        if(number_of_vertices+3 > max_vertices)
+        {
+          throw std::runtime_error("Exceeded maximum number of vertices");
+        }
+        if( (number_of_vertices+3) > VA_aug.rows())
+        {
+          VA_aug.conservativeResize(VA_aug.rows()*2,Eigen::NoChange);
+          C_aug.conservativeResize(VA_aug.rows(),Eigen::NoChange);
+          DV_aug.conservativeResize(VA_aug.rows());
+          I_aug.conservativeResize(VA_aug.rows());
+        }
         VA_aug.row(number_of_vertices) = VA_aug.row(FA_aug(f,0))/2+VA_aug.row(FA_aug(f,1))/2;
         VA_aug.row(number_of_vertices+1) = VA_aug.row(FA_aug(f,1))/2+VA_aug.row(FA_aug(f,2))/2;
         VA_aug.row(number_of_vertices+2) = VA_aug.row(FA_aug(f,2))/2+VA_aug.row(FA_aug(f,0))/2;
 
         // new faces
+        if(number_of_faces+4 > max_faces)
+        {
+          throw std::runtime_error("Exceeded maximum number of faces");
+        }
+        if( (number_of_faces+4) > FA_aug.rows())
+        {
+          FA_aug.conservativeResize(FA_aug.rows()*2,Eigen::NoChange);
+          upper_aug.conservativeResize(FA_aug.rows());
+        }
+
         FA_aug.block(number_of_faces,0,4,3) << FA_aug(f,0), number_of_vertices, number_of_vertices+2, FA_aug(f,1), number_of_vertices+1, number_of_vertices, FA_aug(f,2), number_of_vertices+2, number_of_vertices+1, number_of_vertices, number_of_vertices+1, number_of_vertices+2;
 
         // update lower bound
