@@ -10,6 +10,8 @@
 
 #include < time.h >
 #include < windows.h >
+// timeval
+#include < winsock.h >
 
 #if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
   #define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
@@ -17,10 +19,6 @@
   #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
 #endif
 
-typedef struct timeval {
-    long tv_sec;
-    long tv_usec;
-} timeval;
 
 struct timezone
 {
