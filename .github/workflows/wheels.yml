@@ -29,7 +29,7 @@ jobs:
         name: dist-sdist
         path: dist/*.tar.gz
 
-  build_wheel:
+  build_wheels:
     strategy:
       fail-fast: false
       matrix:
