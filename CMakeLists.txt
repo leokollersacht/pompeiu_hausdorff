@@ -11,6 +11,10 @@ option(BUILD_PYTHON_BINDINGS "Build python bindings" OFF)
 # Libigl
 include(libigl)
 
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+
 file(GLOB SRCFILES "${PROJECT_SOURCE_DIR}/*.cpp")
 
 # library called phd (pompeiu hausdorff distance)
