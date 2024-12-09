@@ -21,10 +21,10 @@ std::tuple<
   double /* time_taken_bvh */,
   double /* time_taken_bounds */>
 pompeiu_hausdorff(
-  const Eigen::MatrixXd & VA,
-  const Eigen::MatrixXi & FA,
-  const Eigen::MatrixXd & VB,
-  const Eigen::MatrixXi & FB,
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VA,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FA,
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
   const double tol,
   const double max_factor,
   const bool normalize)
@@ -51,7 +51,7 @@ pompeiu_hausdorff(
 
     // Put mesh B into a libigl::AABB
     gettimeofday(&start, NULL);
-    igl::AABB<Eigen::MatrixXd,3> treeB;
+    igl::AABB<Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor>,3> treeB;
     treeB.init(VB,FB);
     gettimeofday(&end, NULL);
     time_taken = (end.tv_sec - start.tv_sec) * 1e6;
@@ -64,7 +64,7 @@ pompeiu_hausdorff(
 
     // Initial distance queries
     Eigen::VectorXd DV(VA.rows());
-    Eigen::MatrixXd C(VA.rows(),3);
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> C(VA.rows(),3);
     Eigen::VectorXi I(VA.rows());
     treeB.squared_distance(VB,FB,VA,DV,I,C);
     DV = DV.cwiseSqrt();
@@ -101,10 +101,10 @@ pompeiu_hausdorff(
         max_faces = INT_MAX;
     }
     int number_of_vertices = VA.rows();
-    Eigen::MatrixXd VA_aug(max_vertices,3);
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VA_aug(max_vertices,3);
     VA_aug.block(0,0,number_of_vertices,3) = VA;
     int number_of_faces = FA.rows();
-    Eigen::MatrixXi FA_aug(max_faces,3);
+    Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> FA_aug(max_faces,3);
     FA_aug.block(0,0,number_of_faces,3) = FA;
     Eigen::VectorXd DV_aug(max_vertices);
     DV_aug.segment(0,number_of_vertices) = DV;
@@ -112,12 +112,12 @@ pompeiu_hausdorff(
     I_aug.segment(0,number_of_vertices) = I;
     Eigen::VectorXd upper_aug(max_faces);
     upper_aug.segment(0,number_of_faces) = upper;
-    Eigen::MatrixXd C_aug(max_vertices,3);
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> C_aug(max_vertices,3);
     C_aug.block(0,0,number_of_vertices,3) = C;
     Eigen::VectorXd upper_new(4);
-    Eigen::MatrixXi FA_new(4,3);
-    Eigen::MatrixXd VA_new(3,3);
-    Eigen::MatrixXd VA_new_2(6,3), C_new_2(6,3);
+    Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> FA_new(4,3);
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VA_new(3,3);
+    Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VA_new_2(6,3), C_new_2(6,3);
     Eigen::VectorXd DV_new_2(6);
     Eigen::VectorXi I_new_2(6);
     int f = Q.top().second;

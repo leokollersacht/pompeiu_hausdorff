@@ -25,4 +25,4 @@
 
 using namespace std;
 
-int upper_bounds(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, const Eigen::MatrixXd & VB, const Eigen::MatrixXi & FB, const Eigen::MatrixXd & DV, const Eigen::VectorXi & I, const Eigen::MatrixXd & C, const double & lower, Eigen::VectorXd & u, Eigen::VectorXi & success_bound);
+int upper_bounds(const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VA, const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FA, const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB, const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB, const Eigen::VectorXd & DV, const Eigen::VectorXi & I, const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & C, const double & lower, Eigen::VectorXd & u, Eigen::VectorXi & success_bound);

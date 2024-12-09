@@ -22,4 +22,4 @@
 
 using namespace std;
 
-int kang_upper_bound(const Eigen::MatrixXd & VA, const Eigen::MatrixXi & FA, const Eigen::MatrixXd & VB, const Eigen::MatrixXi & FB, const Eigen::MatrixXd & DV, const Eigen::VectorXi & I, Eigen::VectorXd & u);
+int kang_upper_bound(const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VA, const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FA, const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB, const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB, const Eigen::VectorXd & DV, const Eigen::VectorXi & I, Eigen::VectorXd & u);

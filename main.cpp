@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
     gettimeofday(&start, NULL);
 
     // load meshes (vertices and faces)
+    // Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> VA, VB;
+    // Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> FA, FB;
     Eigen::MatrixXd VA, VB;
     Eigen::MatrixXi FA, FB;
     if (!igl::readOBJ(argv[1],VA,FA)){
