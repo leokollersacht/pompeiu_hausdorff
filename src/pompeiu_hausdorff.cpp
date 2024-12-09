@@ -29,12 +29,14 @@ pompeiu_hausdorff(
   const double max_factor,
   const bool normalize)
 {
+  printf("pompeiu_hausdorff(1)\n");
     // timing variables
     struct timeval start, end;
     double time_taken;
     double time_taken_bvh;
     double time_taken_bounds;
 
+  printf("pompeiu_hausdorff(2)\n");
     double dA;
     if (normalize==1){
         double x_min_A = VA.col(0).minCoeff();
@@ -49,6 +51,7 @@ pompeiu_hausdorff(
     }
 
 
+  printf("pompeiu_hausdorff(3)\n");
     // Put mesh B into a libigl::AABB
     gettimeofday(&start, NULL);
     igl::AABB<Eigen::MatrixXd,3> treeB;
@@ -62,6 +65,7 @@ pompeiu_hausdorff(
     // Start timing for initializations and beginning of the loop
     gettimeofday(&start, NULL);
 
+  printf("pompeiu_hausdorff(4)\n");
     // Initial distance queries
     Eigen::VectorXd DV(VA.rows());
     Eigen::MatrixXd C(VA.rows(),3);
@@ -70,6 +74,7 @@ pompeiu_hausdorff(
     DV = DV.cwiseSqrt();
     double lower = DV.maxCoeff();
 
+  printf("pompeiu_hausdorff(5)\n");
     // initial upper bounds calculation
     Eigen::VectorXi success_bound(FA.rows());
     Eigen::VectorXd upper(FA.rows());
@@ -87,6 +92,7 @@ pompeiu_hausdorff(
         }
     }
 
+  printf("pompeiu_hausdorff(6)\n");
     // Variables needed for the main loop
     int max_vertices;
     if (max_factor*VA.rows()<INT_MAX){
@@ -100,6 +106,7 @@ pompeiu_hausdorff(
     } else {
         max_faces = INT_MAX;
     }
+  printf("pompeiu_hausdorff(7)\n");
     int number_of_vertices = VA.rows();
     Eigen::MatrixXd VA_aug(max_vertices,3);
     VA_aug.block(0,0,number_of_vertices,3) = VA;
@@ -125,6 +132,7 @@ pompeiu_hausdorff(
     Eigen::VectorXi success_bound_new(4);
 
     // Loop while tolerance is not reached
+  printf("pompeiu_hausdorff(8)\n");
     while(upper_max-lower>tol*dA){
 
         // throw error if the queue is empty
@@ -208,11 +216,13 @@ pompeiu_hausdorff(
         iter++;
 
     }
+  printf("pompeiu_hausdorff(9)\n");
 
     gettimeofday(&end, NULL);
     time_taken = (end.tv_sec - start.tv_sec) * 1e6;
     time_taken = (time_taken + (end.tv_usec - start.tv_usec)) * 1e-6;
     time_taken_bounds = 1000*time_taken;
+  printf("pompeiu_hausdorff(10)\n");
 
     return std::make_tuple(lower, upper_max, dA, time_taken_bvh, time_taken_bounds);
 }
