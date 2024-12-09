@@ -1,9 +1,9 @@
 # pompeiu_hausdorff
 Code for "Cascading upper bounds for triangle soup Pompeiu-Hausdorff distance" (SGP 2024). \
 Authors: Leonardo Sacht and Alec Jacobson. \
-\
-Note 1: This code has been tested on a Mac OS machine \
-Note 2: Command "cmake .." below will fetch all the necessary libraries (Eigen, libigl). The size of these libraries is approximately 70 MB. \
+
+## C++
+
 \
 -------- Compilation --------\
 \
