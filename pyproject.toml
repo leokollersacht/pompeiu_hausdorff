@@ -13,7 +13,7 @@ authors = [
     { name = "Alec Jacobson", email = "alecjacobson@gmail.com" },
 ]
 classifiers = [
-    "License :: OSI Approved :: Mozilla Public License 2.0",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)"
 ]
 
 [project.urls]
