@@ -10,7 +10,7 @@
 #if ! _MSC_VER
 #include <sys/time.h>
 #else
-#include "src/gettimeofday.h"
+#include "gettimeofday.h"
 #endif
 
 
