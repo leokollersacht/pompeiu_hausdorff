@@ -39,8 +39,8 @@ wheel.py-api = "cp312"
 build-verbosity = 3
 
 # Run pytest to ensure that the package was correctly built
-test-command = "pytest -s {project}/tests/test.py"
 test-requires = ["pytest","libigl","numpy"]
+test-command = "pytest -s {project}/tests/test.py"
 
 # Don't test Python 3.8 wheels on macOS/arm64
 test-skip="cp38-macosx_*:arm64"
