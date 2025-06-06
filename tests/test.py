@@ -27,3 +27,9 @@ def test_example():
     print("time taken bvh(ms): ", time_taken_bvh)
     print("time taken bounds(ms): ", time_taken_bounds)
     
+    ph = PompeiuHausdorff(VA, FA, VB, FB, tol, max_factor, normalize)
+    print("lower bound: ", ph.lower)
+    print("upper bound: ", ph.upper_max)
+    print("number of faces: ", ph.number_of_faces)
+    print("# faces in queue: ", ph.Q.size())
+    print("top of queue: ", ph.Q.top())
