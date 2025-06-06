@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+#include <queue>
 class PompeiuHausdorff
 {
   public: 
