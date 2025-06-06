@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "cascading_upper_bounds"
-version = "1.0.0"
+version = "1.0.1"
 description = "Implementation of Cascading upper bounds for triangle soup Pompeiu-Hausdorff distance"
 readme = "README.md"
 requires-python = ">=3.8"
