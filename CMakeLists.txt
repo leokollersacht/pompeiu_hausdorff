@@ -15,12 +15,11 @@ include(libigl)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
-file(GLOB SRCFILES "${PROJECT_SOURCE_DIR}/*.cpp")
-
 # library called phd (pompeiu hausdorff distance)
 set(CMAKE_CXX_STANDARD 11)
 set(LIBRARY_NAME phd)
 add_library(${LIBRARY_NAME} STATIC
+  src/PompeiuHausdorff.cpp
   src/pompeiu_hausdorff.cpp
   src/upper_bounds.cpp
   src/kang_upper_bound.cpp
