@@ -2,7 +2,7 @@
 #
 #    cat ../tests/test.py | python  
 import pytest
-from cascading_upper_bounds import pompeiu_hausdorff
+from cascading_upper_bounds import pompeiu_hausdorff, PompeiuHausdorff
 import numpy as np
 import igl
 import pathlib
