@@ -50,7 +50,10 @@ PompeiuHausdorff::PompeiuHausdorff(
     Eigen::VectorXi I(VA.rows());
     treeB.squared_distance(VB,FB,VA,DV,I,C);
     DV = DV.cwiseSqrt();
-    lower = DV.maxCoeff();
+    lower = DV.maxCoeff(&lower_va);
+    lower_fb = I(lower_va);
+    lower_C = C.row(lower_va);
+
 
     // initial upper bounds calculation
     Eigen::VectorXi success_bound(FA.rows());
@@ -64,7 +67,7 @@ PompeiuHausdorff::PompeiuHausdorff(
     // Clear the queque https://stackoverflow.com/a/2852183/148668
     Q = decltype(Q)();
     for (int k=0 ; k<FA.rows(); k++){
-        if (upper[k]>=lower){
+        if (upper[k]>lower){
             Q.emplace(upper[k],k);
         }
     }
@@ -173,7 +176,14 @@ PompeiuHausdorff::PompeiuHausdorff(
         DV_aug.segment(number_of_vertices,3) = DV;
         I_aug.segment(number_of_vertices,3) = I;
         C_aug.block(number_of_vertices,0,3,3) = C;
-        lower = fmax(DV.maxCoeff(),lower);
+        int lower_va_new;
+        const double DV_max = DV.maxCoeff(&lower_va_new);
+        if (DV_max > lower){
+          lower = DV_max;
+          lower_va = number_of_vertices + lower_va_new;
+          lower_fb = I(lower_va_new);
+          lower_C = C.row(lower_va_new);
+        }
 
         // calculate new upper bounds
         FA_new = FA_aug.block(number_of_faces,0,4,3);
@@ -210,7 +220,7 @@ PompeiuHausdorff::PompeiuHausdorff(
 
         // enqueue triangles with upper bound greater than current lower bound
         for (int k=0; k<4; k++){
-            if (upper_new[k]>=lower){
+            if (upper_new[k]>lower){
                 Q.emplace(upper_new[k],number_of_faces+k);
             }
         }
