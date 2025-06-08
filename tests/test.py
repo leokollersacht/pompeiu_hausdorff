@@ -36,7 +36,7 @@ def test_example():
     print("lower_va: ", ph.lower_va)
     print("lower_fb: ", ph.lower_fb)
     print("lower_C: ", ph.lower_C)
-    print("‖VA_aug(lower_va) - lower_C‖: ", np.linalg.norm(VA[ph.lower_va] - ph.lower_C))
+    print("||VA_aug(lower_va) - lower_C||: ", np.linalg.norm(VA[ph.lower_va] - ph.lower_C))
     # 3 by 3 matrix where rows are triangle vertex positions
     vertices = ph.VA_aug[ph.FA_aug[ph.Q.top()[1]]]
     # area of the triangle using cross
@@ -45,5 +45,5 @@ def test_example():
     barycenter = np.mean(vertices, axis=0).reshape(1, 3)
     print("barycenter: ", barycenter)
     D,I,C = igl.point_mesh_squared_distance(barycenter, VB, FB)
-    print("‖VA_aug(lower_va) - barycenter‖: ",np.sqrt(D[0]))
+    print("||VA_aug(lower_va) - barycenter||: ",np.sqrt(D[0]))
 
