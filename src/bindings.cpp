@@ -46,6 +46,9 @@ NB_MODULE(cascading_upper_bounds_ext, m) {
       .def_ro("upper_aug", &PompeiuHausdorff::upper_aug,"#FA_aug list of per-triangle upper bounds")
       // Even though this is read only the pop method above seems to modify it
       .def_ro("Q", &PompeiuHausdorff::Q,"Queue of triangles with upper bound greater than global lower bound")
+      .def_ro("lower_va", &PompeiuHausdorff::lower_va,"Index into VA_aug for the vertex determining the current lower bound")
+      .def_ro("lower_fb", &PompeiuHausdorff::lower_fb,"Index into FB for the face determining the current lower bound")
+      .def_ro("lower_C", &PompeiuHausdorff::lower_C,"Position of point on (VB,FB) closest to the vertex determining the current lower bound")
       ;
 
 

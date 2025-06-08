@@ -26,6 +26,14 @@ class PompeiuHausdorff
     /// Queue of triangles with upper bound greater than global lower bound
     std::priority_queue< std::pair< double, int > , std::vector< std::pair< double, int >  >,
     std::less< std::pair< double, int > > > Q;
+    /// index into VA_aug for the vertex determining the current lower bound
+    int lower_va;
+    /// index into FB for the face determining the current lower bound
+    int lower_fb;
+    /// position of point on (VB,FB) closest to the vertex determining the
+    /// current lower bound
+    Eigen::RowVector3d lower_C;
+
 
   // Should this be deleted?
   PompeiuHausdorff(){}

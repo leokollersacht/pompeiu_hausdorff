@@ -33,3 +33,17 @@ def test_example():
     print("number of faces: ", ph.number_of_faces)
     print("# faces in queue: ", ph.Q.size())
     print("top of queue: ", ph.Q.top())
+    print("lower_va: ", ph.lower_va)
+    print("lower_fb: ", ph.lower_fb)
+    print("lower_C: ", ph.lower_C)
+    print("‖VA_aug(lower_va) - lower_C‖: ", np.linalg.norm(VA[ph.lower_va] - ph.lower_C))
+    # 3 by 3 matrix where rows are triangle vertex positions
+    vertices = ph.VA_aug[ph.FA_aug[ph.Q.top()[1]]]
+    # area of the triangle using cross
+    area = 0.5 * np.linalg.norm(np.cross(vertices[1] - vertices[0], vertices[2] - vertices[0]))
+    print("area of triangle in queue: ", area)
+    barycenter = np.mean(vertices, axis=0).reshape(1, 3)
+    print("barycenter: ", barycenter)
+    D,I,C = igl.point_mesh_squared_distance(barycenter, VB, FB)
+    print("‖VA_aug(lower_va) - barycenter‖: ",np.sqrt(D[0]))
+
