@@ -22,6 +22,7 @@ add_library(${LIBRARY_NAME} STATIC
   src/PompeiuHausdorff.cpp
   src/pompeiu_hausdorff.cpp
   src/upper_bounds.cpp
+  src/geometric_bounds.cpp
   src/kang_upper_bound.cpp
   src/kang_intersect_edge_and_bisector.cpp
   src/bisector_of_two_points.cpp)
