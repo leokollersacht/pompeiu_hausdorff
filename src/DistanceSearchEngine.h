@@ -11,6 +11,14 @@ namespace search {
 typedef igl::AABB<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>, 3> AABBTree;
 
 /**
+ * @brief Available search engine implementations.
+ */
+enum class SearchEngineType {
+    BestFirst,
+    IDAStar
+};
+
+/**
  * @brief Search context containing problem inputs, spatial acceleration trees, and bounds.
  */
 struct SearchContext {

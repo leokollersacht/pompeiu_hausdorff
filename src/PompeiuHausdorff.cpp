@@ -1,5 +1,6 @@
 #include "PompeiuHausdorff.h"
 #include "BestFirstEngine.h"
+#include "IDAStarEngine.h"
 #include "geometric_bounds.h"
 #include <chrono>
 #include <cmath>
@@ -12,7 +13,8 @@ PompeiuHausdorff::PompeiuHausdorff(
     const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
     const double tol,
     const double max_factor,
-    const bool normalize)
+    const bool normalize,
+    const phd::search::SearchEngineType engine_type)
 {
     if (normalize) {
         const double x_span = VA.col(0).maxCoeff() - VA.col(0).minCoeff();
@@ -58,21 +60,33 @@ PompeiuHausdorff::PompeiuHausdorff(
         initial_lower, initial_upper,
         dA, tol, max_factor);
 
-    phd::search::BestFirstEngine engine(search_context);
-    engine.search();
+    if (engine_type == phd::search::SearchEngineType::BestFirst) {
+        phd::search::BestFirstEngine engine(search_context);
+        engine.search();
 
-    // Export results and augmented structures
-    lower = engine.get_lower_bound();
-    upper_max = engine.get_upper_bound();
-    number_of_vertices = engine.get_number_of_vertices();
-    number_of_faces = engine.get_number_of_faces();
-    time_taken_bounds = engine.get_bound_time_ms();
+        lower = engine.get_lower_bound();
+        upper_max = engine.get_upper_bound();
+        number_of_vertices = engine.get_number_of_vertices();
+        number_of_faces = engine.get_number_of_faces();
+        time_taken_bounds = engine.get_bound_time_ms();
 
-    VA_aug = engine.get_VA_aug();
-    C_aug = engine.get_C_aug();
-    DV_aug = engine.get_DV_aug();
-    I_aug = engine.get_I_aug();
-    FA_aug = engine.get_FA_aug();
-    upper_aug = engine.get_upper_aug();
-    Q = engine.get_queue();
+        VA_aug = engine.get_VA_aug();
+        C_aug = engine.get_C_aug();
+        DV_aug = engine.get_DV_aug();
+        I_aug = engine.get_I_aug();
+        FA_aug = engine.get_FA_aug();
+        upper_aug = engine.get_upper_aug();
+        Q = engine.get_queue();
+    } else if (engine_type == phd::search::SearchEngineType::IDAStar) {
+        phd::search::IDAStarEngine engine(search_context);
+        engine.search();
+
+        lower = engine.get_lower_bound();
+        upper_max = engine.get_upper_bound();
+        number_of_vertices = engine.get_number_of_vertices();
+        number_of_faces = engine.get_number_of_faces();
+        time_taken_bounds = engine.get_bound_time_ms();
+    } else {
+        throw std::invalid_argument("Unknown search engine type requested");
+    }
 }

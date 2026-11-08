@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <tuple>
+#include "DistanceSearchEngine.h"
 
 /// Compute lower and upper bounds on the Pompeiu-Hausdorff distance between two
 /// meshes A and B
@@ -11,6 +12,7 @@
 /// @param[in] tol  tolerance value for the difference between upper and lower bounds
 /// @param[in] max_factor  factor to define the maximum allowed number of faces and vertices in the subdivided mesh A with respect to the number of faces and vertices of the initial mesh A
 /// @param[in] normalize  0 (false) or 1 (true) to normalize tolerance by the length of the diagonal of A's bounding box
+/// @param[in] engine_type Search engine implementation (default: BestFirst)
 
 std::tuple<
   double /* lower */,
@@ -25,4 +27,5 @@ pompeiu_hausdorff(
   const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
   const double tol = 1e-8,
   const double max_factor = 1000000,
-  const bool normalize = true);
+  const bool normalize = true,
+  const phd::search::SearchEngineType engine_type = phd::search::SearchEngineType::BestFirst);

@@ -16,10 +16,11 @@ pompeiu_hausdorff(
   const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
   const double tol,
   const double max_factor,
-  const bool normalize)
+  const bool normalize,
+  const phd::search::SearchEngineType engine_type)
 {
   std::cout<< "Computing Pompeiu-Hausdorff distance..." << std::endl;
-  PompeiuHausdorff ph(VA, FA, VB, FB, tol, max_factor, normalize);
+  PompeiuHausdorff ph(VA, FA, VB, FB, tol, max_factor, normalize, engine_type);
   std::cout<< "Done." << std::endl;
   return std::make_tuple(
     ph.lower, 

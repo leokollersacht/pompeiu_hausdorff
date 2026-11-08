@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <queue>
+#include "DistanceSearchEngine.h"
 class PompeiuHausdorff
 {
   public: 
@@ -47,6 +48,7 @@ class PompeiuHausdorff
     const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
     const double tol = 1e-8,
     const double max_factor = 1000000,
-    const bool   normalize = true);
+    const bool   normalize = true,
+    const phd::search::SearchEngineType engine_type = phd::search::SearchEngineType::BestFirst);
   // It seems this probably isn't needed after C++17
 };
