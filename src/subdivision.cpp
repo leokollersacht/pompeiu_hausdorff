@@ -17,9 +17,9 @@ SubdividedTriangle subdivide_triangle_1_to_4(
     const Eigen::Vector3d& v2)
 {
     SubdividedTriangle result;
-    result.midpoints.row(0) = (v0 + v1) / 2.0;
-    result.midpoints.row(1) = (v1 + v2) / 2.0;
-    result.midpoints.row(2) = (v2 + v0) / 2.0;
+    result.midpoints.row(0) = v0 / 2.0 + v1 / 2.0;
+    result.midpoints.row(1) = v1 / 2.0 + v2 / 2.0;
+    result.midpoints.row(2) = v2 / 2.0 + v0 / 2.0;
     return result;
 }
 
