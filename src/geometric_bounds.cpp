@@ -166,6 +166,30 @@ double evaluate_cascading_bound_for_triangle(
     const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
     double lower,
     int& successful_bound_index,
+    KangWorkspace* workspace)
+{
+    return evaluate_cascading_bound_for_triangle(
+        triangle_vertices,
+        vertex_distances,
+        projection_indices,
+        closest_points,
+        VB,
+        FB,
+        lower,
+        successful_bound_index,
+        workspace,
+        nullptr);
+}
+
+double evaluate_cascading_bound_for_triangle(
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& triangle_vertices,
+    const Eigen::Vector3d& vertex_distances,
+    const Eigen::Vector3i& projection_indices,
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& closest_points,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    double lower,
+    int& successful_bound_index,
     KangWorkspace* workspace,
     BoundCallStatistics* stats)
 {
@@ -231,6 +255,34 @@ double evaluate_cascading_bound_for_triangle(
 
     successful_bound_index = 5;
     return current_bound;
+}
+
+int evaluate_cascading_bounds(
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VA,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FA,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    const Eigen::VectorXd& DV,
+    const Eigen::VectorXi& I,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& C,
+    double lower,
+    Eigen::VectorXd& upper_bounds_out,
+    Eigen::VectorXi& success_bound_out,
+    KangWorkspace* workspace)
+{
+    return evaluate_cascading_bounds(
+        VA,
+        FA,
+        VB,
+        FB,
+        DV,
+        I,
+        C,
+        lower,
+        upper_bounds_out,
+        success_bound_out,
+        workspace,
+        nullptr);
 }
 
 int evaluate_cascading_bounds(

@@ -146,8 +146,19 @@ double evaluate_cascading_bound_for_triangle(
     const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
     double lower,
     int& successful_bound_index,
-    KangWorkspace* workspace = nullptr,
-    BoundCallStatistics* stats = nullptr);
+    KangWorkspace* workspace = nullptr);
+
+double evaluate_cascading_bound_for_triangle(
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& triangle_vertices,
+    const Eigen::Vector3d& vertex_distances,
+    const Eigen::Vector3i& projection_indices,
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& closest_points,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    double lower,
+    int& successful_bound_index,
+    KangWorkspace* workspace,
+    BoundCallStatistics* stats);
 
 /**
  * @brief Batch evaluation of cascading upper bounds for all faces in mesh A.
@@ -165,8 +176,21 @@ int evaluate_cascading_bounds(
     double lower,
     Eigen::VectorXd& upper_bounds_out,
     Eigen::VectorXi& success_bound_out,
-    KangWorkspace* workspace = nullptr,
-    BoundCallStatistics* stats = nullptr);
+    KangWorkspace* workspace = nullptr);
+
+int evaluate_cascading_bounds(
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VA,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FA,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    const Eigen::VectorXd& DV,
+    const Eigen::VectorXi& I,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& C,
+    double lower,
+    Eigen::VectorXd& upper_bounds_out,
+    Eigen::VectorXi& success_bound_out,
+    KangWorkspace* workspace,
+    BoundCallStatistics* stats);
 
 } // namespace geometry
 } // namespace phd
