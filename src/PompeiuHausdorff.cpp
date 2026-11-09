@@ -68,7 +68,8 @@ PompeiuHausdorff::PompeiuHausdorff(
         upper_max = engine.get_upper_bound();
         number_of_vertices = engine.get_number_of_vertices();
         number_of_faces = engine.get_number_of_faces();
-        time_taken_bounds = engine.get_bound_time_ms();
+        time_taken_bounds = 1000.0 * (std::chrono::duration<double>(
+            std::chrono::system_clock::now().time_since_epoch()).count() - bvh_end_time);
 
         VA_aug = engine.get_VA_aug();
         C_aug = engine.get_C_aug();
@@ -85,7 +86,8 @@ PompeiuHausdorff::PompeiuHausdorff(
         upper_max = engine.get_upper_bound();
         number_of_vertices = engine.get_number_of_vertices();
         number_of_faces = engine.get_number_of_faces();
-        time_taken_bounds = engine.get_bound_time_ms();
+        time_taken_bounds = 1000.0 * (std::chrono::duration<double>(
+            std::chrono::system_clock::now().time_since_epoch()).count() - bvh_end_time);
     } else {
         throw std::invalid_argument("Unknown search engine type requested");
     }
