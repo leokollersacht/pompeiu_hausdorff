@@ -20,8 +20,13 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    if (argc!=6) {
-        cout << "Command line input should be two triangle soups A and B in .obj format; a tolerance value for the difference between upper and lower bounds; factor to define the maximum allowed number of faces and vertices in the subdivided mesh A with respect to the number of faces and vertices of the initial mesh A; 0 (false) or 1 (true) to normalize tolerance by the length of the diagonal of A's bounding box;" << endl;
+    if (argc != 6 && argc != 7) {
+        cout << "Usage: " << argv[0] << " meshA.obj meshB.obj tol max_factor normalize [engine]\n"
+             << "  meshA.obj, meshB.obj: triangle soups in .obj format\n"
+             << "  tol: tolerance value between upper and lower bounds\n"
+             << "  max_factor: maximum allowed factor for faces and vertices expansion\n"
+             << "  normalize: 0 (false) or 1 (true) to normalize tolerance by bounding box diagonal\n"
+             << "  engine (optional): 'best_first' (default) or 'idastar'" << endl;
         return 0;
     }
 
@@ -61,6 +66,20 @@ int main(int argc, char *argv[])
     int normalize = atoi(argv[5]);
     double max_factor = atof(argv[4]);
     double tol = atof(argv[3]);
+
+    phd::search::SearchEngineType engine_type = phd::search::SearchEngineType::BestFirst;
+    if (argc == 7) {
+        std::string engine_arg = argv[6];
+        if (engine_arg == "best_first" || engine_arg == "bestfirst") {
+            engine_type = phd::search::SearchEngineType::BestFirst;
+        } else if (engine_arg == "idastar" || engine_arg == "ida*") {
+            engine_type = phd::search::SearchEngineType::IDAStar;
+        } else {
+            std::cerr << "Error: Unknown search engine '" << engine_arg
+                      << "'. Available engines: 'best_first', 'idastar'." << std::endl;
+            return 0;
+        }
+    }
     
     double dA;
     double lower;
@@ -70,7 +89,7 @@ int main(int argc, char *argv[])
     try
     {
       std::tie(lower, upper_max, dA, time_taken_bvh, time_taken_bounds) = 
-        pompeiu_hausdorff(VA, FA, VB, FB, tol, max_factor, normalize);
+        pompeiu_hausdorff(VA, FA, VB, FB, tol, max_factor, normalize, engine_type);
     }
     catch (const std::exception& e)
     {
