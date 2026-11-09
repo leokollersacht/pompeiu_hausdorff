@@ -13,6 +13,7 @@ Captures:
 import argparse
 import csv
 import datetime
+import multiprocessing
 import os
 import re
 import resource
@@ -212,6 +213,39 @@ def run_single_profile(
     return record
 
 
+def _worker_entrypoint(params: Dict[str, any], queue: multiprocessing.Queue):
+    """
+    Entrypoint executed inside a fresh worker process.
+    Guarantees that getrusage(RUSAGE_CHILDREN) starts at 0 without residual metrics.
+    """
+    try:
+        record = run_single_profile(**params)
+        queue.put((True, record))
+    except Exception as exc:
+        queue.put((False, str(exc)))
+
+
+def run_isolated_profile(**params) -> Dict[str, any]:
+    """
+    Executes a single run inside an isolated subprocess worker so that
+    RUSAGE_CHILDREN reflects only this run's memory without bleeding into subsequent runs.
+    """
+    ctx = multiprocessing.get_context("spawn")
+    queue = ctx.Queue()
+    worker = ctx.Process(target=_worker_entrypoint, args=(params, queue))
+    worker.start()
+    worker.join()
+
+    if queue.empty():
+        raise RuntimeError("Profile worker process exited unexpectedly without returning metrics")
+
+    success, payload = queue.get()
+    if not success:
+        raise RuntimeError(payload)
+
+    return payload
+
+
 def append_record_to_csv(csv_path: str, record: Dict[str, any]) -> None:
     """
     Appends a profiled record to the specified CSV file, creating headers if needed.
@@ -318,7 +352,7 @@ def main():
     for run_idx in range(1, args.runs + 1):
         if args.runs > 1:
             print(f"\n>>> Running iteration {run_idx}/{args.runs}...")
-        record = run_single_profile(
+        record = run_isolated_profile(
             executable=args.executable,
             mesh_a=args.mesh_a,
             mesh_b=args.mesh_b,
