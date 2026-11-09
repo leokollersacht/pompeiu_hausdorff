@@ -12,6 +12,10 @@ struct ExecutionTelemetry {
     geometry::BoundCallStatistics bound_stats;
 };
 
+void record_initial_bounds(const geometry::BoundCallStatistics& stats);
+
+void record_search_metrics(uint64_t subdivided_faces, const geometry::BoundCallStatistics& stats);
+
 void record_last_execution(uint64_t subdivided_faces, const geometry::BoundCallStatistics& stats);
 
 const ExecutionTelemetry& get_last_execution();

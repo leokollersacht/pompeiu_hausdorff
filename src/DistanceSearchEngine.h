@@ -3,7 +3,6 @@
 
 #include <Eigen/Core>
 #include <igl/AABB.h>
-#include "geometric_bounds.h"
 
 namespace phd {
 namespace search {
@@ -107,19 +106,6 @@ public:
      * @brief Returns the time in milliseconds consumed by the search routine.
      */
     virtual double get_bound_time_ms() const = 0;
-
-    /**
-     * @brief Returns the total number of subdivided faces during search.
-     */
-    virtual uint64_t get_subdivided_faces() const { return 0; }
-
-    /**
-     * @brief Returns the bound evaluation statistics during search.
-     */
-    virtual const phd::geometry::BoundCallStatistics& get_bound_statistics() const {
-        static const phd::geometry::BoundCallStatistics empty_stats{};
-        return empty_stats;
-    }
 };
 
 } // namespace search
