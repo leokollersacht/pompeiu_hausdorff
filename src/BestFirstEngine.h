@@ -2,6 +2,7 @@
 #define BEST_FIRST_ENGINE_H
 
 #include "DistanceSearchEngine.h"
+#include "geometric_bounds.h"
 #include <queue>
 #include <vector>
 
@@ -81,6 +82,7 @@ private:
     Eigen::VectorXd upper_aug_;
 
     PriorityQueue Q_;
+    phd::geometry::KangWorkspace kang_workspace_;
 };
 
 } // namespace search

@@ -61,24 +61,40 @@ double compute_third_bound(
     const Eigen::Vector3d& vertex_distances,
     const Eigen::Vector3i& projection_indices,
     const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
-    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB)
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    KangWorkspace& workspace)
 {
-    Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> local_face(1, 3);
-    local_face(0, 0) = 0;
-    local_face(0, 1) = 1;
-    local_face(0, 2) = 2;
+    workspace.VA_kang = triangle_vertices;
+    workspace.DV_kang = vertex_distances;
+    workspace.I_kang = projection_indices;
 
-    Eigen::VectorXd kang_output(1);
     kang_upper_bound(
-        triangle_vertices,
-        local_face,
+        workspace.VA_kang,
+        workspace.FA_kang,
         VB,
         FB,
+        workspace.DV_kang,
+        workspace.I_kang,
+        workspace.u_kang);
+
+    return workspace.u_kang(0);
+}
+
+double compute_third_bound(
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& triangle_vertices,
+    const Eigen::Vector3d& vertex_distances,
+    const Eigen::Vector3i& projection_indices,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB)
+{
+    KangWorkspace local_workspace;
+    return compute_third_bound(
+        triangle_vertices,
         vertex_distances,
         projection_indices,
-        kang_output);
-
-    return kang_output(0);
+        VB,
+        FB,
+        local_workspace);
 }
 
 double compute_fourth_bound(
@@ -149,7 +165,8 @@ double evaluate_cascading_bound_for_triangle(
     const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
     const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
     double lower,
-    int& successful_bound_index)
+    int& successful_bound_index,
+    KangWorkspace* workspace)
 {
     if (has_identical_projections(projection_indices(0), projection_indices(1), projection_indices(2))) {
         successful_bound_index = 0;
@@ -177,12 +194,9 @@ double evaluate_cascading_bound_for_triangle(
         return current_bound;
     }
 
-    const double third_bound = compute_third_bound(
-        triangle_vertices,
-        vertex_distances,
-        projection_indices,
-        VB,
-        FB);
+    const double third_bound = (workspace != nullptr)
+        ? compute_third_bound(triangle_vertices, vertex_distances, projection_indices, VB, FB, *workspace)
+        : compute_third_bound(triangle_vertices, vertex_distances, projection_indices, VB, FB);
     current_bound = std::min(current_bound, third_bound);
     if (current_bound < lower) {
         successful_bound_index = 3;
@@ -213,12 +227,16 @@ int evaluate_cascading_bounds(
     const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& C,
     double lower,
     Eigen::VectorXd& upper_bounds_out,
-    Eigen::VectorXi& success_bound_out)
+    Eigen::VectorXi& success_bound_out,
+    KangWorkspace* workspace)
 {
     if (upper_bounds_out.rows() != FA.rows()) {
         std::cerr << "geometric_bounds: Output upper bound vector dimension mismatch" << std::endl;
         return 0;
     }
+
+    KangWorkspace local_workspace;
+    KangWorkspace& active_workspace = (workspace != nullptr) ? *workspace : local_workspace;
 
     for (int face_idx = 0; face_idx < FA.rows(); ++face_idx) {
         const int v0_idx = FA(face_idx, 0);
@@ -247,7 +265,8 @@ int evaluate_cascading_bounds(
             VB,
             FB,
             lower,
-            bound_indicator);
+            bound_indicator,
+            &active_workspace);
         success_bound_out(face_idx) = bound_indicator;
     }
 

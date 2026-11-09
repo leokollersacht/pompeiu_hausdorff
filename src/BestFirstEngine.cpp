@@ -167,7 +167,8 @@ void BestFirstEngine::search()
                 C_evaluation_block,
                 lower_,
                 upper_new,
-                success_bound_new)) {
+                success_bound_new,
+                &kang_workspace_)) {
             throw std::runtime_error("error in upper bound function");
         }
 

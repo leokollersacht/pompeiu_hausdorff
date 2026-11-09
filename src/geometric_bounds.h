@@ -53,6 +53,25 @@ double compute_second_bound(
     const Eigen::Vector3d& edge_lengths);
 
 /**
+ * @brief Reusable workspace buffers for Kang et al.'s continuous bound calculation (u3).
+ *
+ * Reusing these preallocated buffers avoids 5 dynamic heap allocations per triangle reaching u3.
+ */
+struct KangWorkspace {
+    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> VA_kang{3, 3};
+    Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor> FA_kang{1, 3};
+    Eigen::VectorXd DV_kang{3};
+    Eigen::VectorXi I_kang{3};
+    Eigen::VectorXd u_kang{1};
+
+    KangWorkspace() {
+        FA_kang(0, 0) = 0;
+        FA_kang(0, 1) = 1;
+        FA_kang(0, 2) = 2;
+    }
+};
+
+/**
  * @brief Computes ThirdBound (u3) using Kang et al.'s continuous upper bound projection.
  *
  * @param triangle_vertices Coordinates of the 3 triangle vertices (3x3 row-major matrix).
@@ -60,8 +79,17 @@ double compute_second_bound(
  * @param projection_indices Face indices on mesh B where vertices project (3x1 vector).
  * @param VB Vertex coordinates of mesh B (#VB x 3).
  * @param FB Triangle face indices of mesh B (#FB x 3).
+ * @param workspace Preallocated workspace buffer to eliminate heap allocations.
  * @return Upper bound u3.
  */
+double compute_third_bound(
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& triangle_vertices,
+    const Eigen::Vector3d& vertex_distances,
+    const Eigen::Vector3i& projection_indices,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    KangWorkspace& workspace);
+
 double compute_third_bound(
     const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& triangle_vertices,
     const Eigen::Vector3d& vertex_distances,
@@ -106,7 +134,8 @@ double evaluate_cascading_bound_for_triangle(
     const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
     const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
     double lower,
-    int& successful_bound_index);
+    int& successful_bound_index,
+    KangWorkspace* workspace = nullptr);
 
 /**
  * @brief Batch evaluation of cascading upper bounds for all faces in mesh A.
@@ -123,7 +152,8 @@ int evaluate_cascading_bounds(
     const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& C,
     double lower,
     Eigen::VectorXd& upper_bounds_out,
-    Eigen::VectorXi& success_bound_out);
+    Eigen::VectorXi& success_bound_out,
+    KangWorkspace* workspace = nullptr);
 
 } // namespace geometry
 } // namespace phd
