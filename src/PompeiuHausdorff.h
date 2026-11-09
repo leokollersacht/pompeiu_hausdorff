@@ -14,8 +14,6 @@ class PompeiuHausdorff
     double time_taken_bounds;
     int number_of_vertices;
     int number_of_faces;
-    uint64_t subdivided_faces = 0;
-    phd::geometry::BoundCallStatistics bound_stats;
     /// Current memory allocation for vertices (top number_of_vertices rows of
     /// VA_aug are active)
     Eigen::MatrixXd VA_aug;

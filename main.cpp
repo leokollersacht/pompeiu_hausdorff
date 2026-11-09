@@ -7,6 +7,7 @@
 
 #include "src/pompeiu_hausdorff.h"
 #include "src/PompeiuHausdorff.h"
+#include "src/telemetry.h"
 // time include
 #if ! _MSC_VER
 #include <sys/time.h>
@@ -97,14 +98,15 @@ int main(int argc, char *argv[])
       cout << "upper_max=" << ph.upper_max << endl;
       cout << "lower/dA=" << ph.lower / ph.dA << endl;
       cout << "upper_max/dA=" << ph.upper_max / ph.dA << endl;
+      const auto& telemetry = phd::telemetry::get_last_execution();
       cout << "bvh_time(ms)=" << ph.time_taken_bvh << endl;
       cout << "bound_time(ms)=" << ph.time_taken_bounds << endl;
-      cout << "subdivided_faces=" << ph.subdivided_faces << endl;
-      cout << "u0_calls=" << ph.bound_stats.u0_calls << endl;
-      cout << "u1_calls=" << ph.bound_stats.u1_calls << endl;
-      cout << "u2_calls=" << ph.bound_stats.u2_calls << endl;
-      cout << "u3_calls=" << ph.bound_stats.u3_calls << endl;
-      cout << "u4_calls=" << ph.bound_stats.u4_calls << endl;
+      cout << "subdivided_faces=" << telemetry.subdivided_faces << endl;
+      cout << "u0_calls=" << telemetry.bound_stats.u0_calls << endl;
+      cout << "u1_calls=" << telemetry.bound_stats.u1_calls << endl;
+      cout << "u2_calls=" << telemetry.bound_stats.u2_calls << endl;
+      cout << "u3_calls=" << telemetry.bound_stats.u3_calls << endl;
+      cout << "u4_calls=" << telemetry.bound_stats.u4_calls << endl;
       cout << "----------------------------------------" << endl;
     }
     catch (const std::exception& e)
