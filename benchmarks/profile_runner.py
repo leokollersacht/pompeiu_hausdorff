@@ -156,8 +156,12 @@ def run_single_profile(
     rusage_peak_kb = float(ru_after.ru_maxrss)
     peak_rss_rusage_mb = rusage_peak_kb / 1024.0
 
-    # Global peak RSS takes the maximum observed
-    peak_rss_mb = max(peak_rss_proc_mb, peak_rss_rusage_mb)
+    # Peak RSS: prefer /proc/[pid]/status (VmHWM) to isolate the target process's
+    # post-exec memory from any inherited launcher/fork resident footprint.
+    if peak_rss_proc_mb > 0:
+        peak_rss_mb = peak_rss_proc_mb
+    else:
+        peak_rss_mb = peak_rss_rusage_mb
 
     parsed_metrics = parse_binary_stdout(stdout)
 
