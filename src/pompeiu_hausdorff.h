@@ -12,7 +12,6 @@
 /// @param[in] tol  tolerance value for the difference between upper and lower bounds
 /// @param[in] max_factor  factor to define the maximum allowed number of faces and vertices in the subdivided mesh A with respect to the number of faces and vertices of the initial mesh A
 /// @param[in] normalize  0 (false) or 1 (true) to normalize tolerance by the length of the diagonal of A's bounding box
-/// @param[in] engine_type Search engine implementation (default: BestFirst)
 
 std::tuple<
   double /* lower */,
@@ -27,5 +26,21 @@ pompeiu_hausdorff(
   const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
   const double tol = 1e-8,
   const double max_factor = 1000000,
-  const bool normalize = true,
-  const phd::search::SearchEngineType engine_type = phd::search::SearchEngineType::BestFirst);
+  const bool normalize = true);
+
+/// @param[in] engine_type Search engine implementation
+std::tuple<
+  double /* lower */,
+  double /* upper */,
+  double /* dA */,
+  double /* time_taken_bvh */,
+  double /* time_taken_bounds */>
+pompeiu_hausdorff(
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VA,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FA,
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
+  const double tol,
+  const double max_factor,
+  const bool normalize,
+  const phd::search::SearchEngineType engine_type);

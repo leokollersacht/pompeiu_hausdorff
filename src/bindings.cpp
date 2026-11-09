@@ -54,7 +54,17 @@ NB_MODULE(cascading_upper_bounds_ext, m) {
       ;
 
 
-  m.def("pompeiu_hausdorff", &pompeiu_hausdorff,
+  using PompeiuHausdorffFn = std::tuple<double, double, double, double, double>(*)(
+      const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const double,
+      const double,
+      const bool,
+      const phd::search::SearchEngineType);
+
+  m.def("pompeiu_hausdorff", static_cast<PompeiuHausdorffFn>(&pompeiu_hausdorff),
       "VA"_a, "FA"_a, "VB"_a, "FB"_a, "tol"_a=1e-8, "max_factor"_a=1000000, "normalize"_a=false, "engine"_a=phd::search::SearchEngineType::BestFirst,
       R"(Compute lower and upper bounds on the Pompeiu-Hausdorff distance between two
 meshes A and B
