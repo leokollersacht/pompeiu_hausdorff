@@ -27,6 +27,21 @@ __pycache__/
 .Python
 *.egg-info/
 dist/
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Benchmark and profiling outputs
+results*.csv
+benchmarks/*.csv
+*.prof
+*.log
 
 # IDE and OS
 .vscode/
