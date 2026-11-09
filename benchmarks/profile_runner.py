@@ -234,12 +234,25 @@ def run_isolated_profile(**params) -> Dict[str, any]:
     queue = ctx.Queue()
     worker = ctx.Process(target=_worker_entrypoint, args=(params, queue))
     worker.start()
-    worker.join()
 
-    if queue.empty():
+    # Read result from queue before joining to avoid pipe buffer deadlock
+    result = None
+    try:
+        while worker.is_alive():
+            try:
+                result = queue.get(timeout=0.1)
+                break
+            except Exception:
+                continue
+        if result is None and not queue.empty():
+            result = queue.get(timeout=1.0)
+    finally:
+        worker.join()
+
+    if result is None:
         raise RuntimeError("Profile worker process exited unexpectedly without returning metrics")
 
-    success, payload = queue.get()
+    success, payload = result
     if not success:
         raise RuntimeError(payload)
 
