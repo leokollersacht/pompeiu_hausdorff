@@ -71,13 +71,7 @@ PompeiuHausdorff::PompeiuHausdorff(
         time_taken_bounds = 1000.0 * (std::chrono::duration<double>(
             std::chrono::system_clock::now().time_since_epoch()).count() - bvh_end_time);
 
-        VA_aug = engine.get_VA_aug();
-        C_aug = engine.get_C_aug();
-        DV_aug = engine.get_DV_aug();
-        I_aug = engine.get_I_aug();
-        FA_aug = engine.get_FA_aug();
-        upper_aug = engine.get_upper_aug();
-        Q = engine.get_queue();
+        engine.release_state(VA_aug, C_aug, DV_aug, I_aug, FA_aug, upper_aug, Q);
     } else if (engine_type == phd::search::SearchEngineType::IDAStar) {
         phd::search::IDAStarEngine engine(search_context);
         engine.search();

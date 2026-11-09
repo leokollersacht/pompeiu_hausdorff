@@ -52,6 +52,18 @@ public:
     const Eigen::VectorXd& get_upper_aug() const;
     const PriorityQueue& get_queue() const;
 
+    /**
+     * @brief Transfers ownership of the internal search buffers to avoid peak memory duplication.
+     */
+    void release_state(
+        Eigen::MatrixXd& out_VA_aug,
+        Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& out_C_aug,
+        Eigen::VectorXd& out_DV_aug,
+        Eigen::VectorXi& out_I_aug,
+        Eigen::MatrixXi& out_FA_aug,
+        Eigen::VectorXd& out_upper_aug,
+        PriorityQueue& out_Q);
+
 private:
     SearchContext context_;
 

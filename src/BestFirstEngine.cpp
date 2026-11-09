@@ -255,5 +255,23 @@ const PriorityQueue& BestFirstEngine::get_queue() const
     return Q_;
 }
 
+void BestFirstEngine::release_state(
+    Eigen::MatrixXd& out_VA_aug,
+    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& out_C_aug,
+    Eigen::VectorXd& out_DV_aug,
+    Eigen::VectorXi& out_I_aug,
+    Eigen::MatrixXi& out_FA_aug,
+    Eigen::VectorXd& out_upper_aug,
+    PriorityQueue& out_Q)
+{
+    out_VA_aug = std::move(VA_aug_);
+    out_C_aug = std::move(C_aug_);
+    out_DV_aug = std::move(DV_aug_);
+    out_I_aug = std::move(I_aug_);
+    out_FA_aug = std::move(FA_aug_);
+    out_upper_aug = std::move(upper_aug_);
+    out_Q = std::move(Q_);
+}
+
 } // namespace search
 } // namespace phd
