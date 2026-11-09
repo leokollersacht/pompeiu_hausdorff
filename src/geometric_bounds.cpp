@@ -235,8 +235,14 @@ int evaluate_cascading_bounds(
         return 0;
     }
 
-    KangWorkspace local_workspace;
-    KangWorkspace& active_workspace = (workspace != nullptr) ? *workspace : local_workspace;
+    if (workspace == nullptr) {
+        KangWorkspace local_workspace;
+        return evaluate_cascading_bounds(
+            VA, FA, VB, FB, DV, I, C, lower,
+            upper_bounds_out, success_bound_out, &local_workspace);
+    }
+
+    KangWorkspace& active_workspace = *workspace;
 
     for (int face_idx = 0; face_idx < FA.rows(); ++face_idx) {
         const int v0_idx = FA(face_idx, 0);
