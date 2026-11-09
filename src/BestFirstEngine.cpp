@@ -104,6 +104,7 @@ void BestFirstEngine::search()
 
         const auto subdivision_result = phd::geometry::subdivide_triangle_1_to_4(
             vertex_0, vertex_1, vertex_2);
+        subdivided_faces_++;
 
         VA_aug_.block(number_of_vertices_, 0, 3, 3) = subdivision_result.midpoints;
 
@@ -168,7 +169,8 @@ void BestFirstEngine::search()
                 lower_,
                 upper_new,
                 success_bound_new,
-                &kang_workspace_)) {
+                &kang_workspace_,
+                &bound_stats_)) {
             throw std::runtime_error("error in upper bound function");
         }
 
@@ -272,6 +274,16 @@ void BestFirstEngine::release_state(
     out_FA_aug = std::move(FA_aug_);
     out_upper_aug = std::move(upper_aug_);
     out_Q = std::move(Q_);
+}
+
+uint64_t BestFirstEngine::get_subdivided_faces() const
+{
+    return subdivided_faces_;
+}
+
+const phd::geometry::BoundCallStatistics& BestFirstEngine::get_bound_statistics() const
+{
+    return bound_stats_;
 }
 
 } // namespace search

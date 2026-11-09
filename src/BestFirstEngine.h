@@ -43,6 +43,8 @@ public:
     int get_number_of_vertices() const override;
     int get_number_of_faces() const override;
     double get_bound_time_ms() const override;
+    uint64_t get_subdivided_faces() const override;
+    const phd::geometry::BoundCallStatistics& get_bound_statistics() const override;
 
     // Direct accessors for backward compatibility and analysis
     const Eigen::MatrixXd& get_VA_aug() const;
@@ -83,6 +85,8 @@ private:
 
     PriorityQueue Q_;
     phd::geometry::KangWorkspace kang_workspace_;
+    uint64_t subdivided_faces_ = 0;
+    phd::geometry::BoundCallStatistics bound_stats_;
 };
 
 } // namespace search

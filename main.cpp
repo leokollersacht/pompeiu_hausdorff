@@ -6,6 +6,7 @@
 #include <igl/readOBJ.h>
 
 #include "src/pompeiu_hausdorff.h"
+#include "src/PompeiuHausdorff.h"
 // time include
 #if ! _MSC_VER
 #include <sys/time.h>
@@ -81,35 +82,36 @@ int main(int argc, char *argv[])
         }
     }
     
-    double dA;
-    double lower;
-    double upper_max;
-    double time_taken_bvh;
-    double time_taken_bounds;
     try
     {
-      std::tie(lower, upper_max, dA, time_taken_bvh, time_taken_bounds) = 
-        pompeiu_hausdorff(VA, FA, VB, FB, tol, max_factor, normalize, engine_type);
+      std::cout << "Computing Pompeiu-Hausdorff distance..." << std::endl;
+      PompeiuHausdorff ph(VA, FA, VB, FB, tol, max_factor, normalize, engine_type);
+      std::cout << "Done." << std::endl;
+
+      // Adding final statistics print for benchmark and profiling
+      cout << fixed;
+      cout << setprecision(12);
+      cout << "----- Results -----" << endl;
+      cout << "dA = " << ph.dA << endl;
+      cout << "lower=" << ph.lower << endl;
+      cout << "upper_max=" << ph.upper_max << endl;
+      cout << "lower/dA=" << ph.lower / ph.dA << endl;
+      cout << "upper_max/dA=" << ph.upper_max / ph.dA << endl;
+      cout << "bvh_time(ms)=" << ph.time_taken_bvh << endl;
+      cout << "bound_time(ms)=" << ph.time_taken_bounds << endl;
+      cout << "subdivided_faces=" << ph.subdivided_faces << endl;
+      cout << "u0_calls=" << ph.bound_stats.u0_calls << endl;
+      cout << "u1_calls=" << ph.bound_stats.u1_calls << endl;
+      cout << "u2_calls=" << ph.bound_stats.u2_calls << endl;
+      cout << "u3_calls=" << ph.bound_stats.u3_calls << endl;
+      cout << "u4_calls=" << ph.bound_stats.u4_calls << endl;
+      cout << "----------------------------------------" << endl;
     }
     catch (const std::exception& e)
     {
       std::cerr << "Error: " << e.what() << std::endl;
       return 0;
     }
-
-
-    // Adding final statistics print for Zheng's benchmark
-    cout << fixed;
-    cout << setprecision(12);
-    cout << "----- Results -----" << endl;
-    cout << "dA = " << dA << endl;
-    cout << "lower=" << lower << endl;
-    cout << "upper_max=" << upper_max << endl;
-    cout << "lower/dA=" << lower/dA << endl;
-    cout << "upper_max/dA=" << upper_max/dA << endl;
-    cout << "bvh_time(ms)=" << time_taken_bvh << endl;
-    cout << "bound_time(ms)=" << time_taken_bounds << endl;
-    cout << "----------------------------------------" << endl;
 
     return 1;
 }

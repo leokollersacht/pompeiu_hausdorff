@@ -61,7 +61,8 @@ PompeiuHausdorff::PompeiuHausdorff(
     Eigen::VectorXd initial_upper(FA.rows());
     if (!phd::geometry::evaluate_cascading_bounds(
             VA, FA, VB, FB, initial_DV, initial_I, initial_C,
-            initial_lower, initial_upper, initial_success_bound)) {
+            initial_lower, initial_upper, initial_success_bound,
+            nullptr, &bound_stats)) {
         throw std::runtime_error("error in upper bound function");
     }
 
@@ -80,6 +81,15 @@ PompeiuHausdorff::PompeiuHausdorff(
         upper_max = engine.get_upper_bound();
         number_of_vertices = engine.get_number_of_vertices();
         number_of_faces = engine.get_number_of_faces();
+        subdivided_faces = engine.get_subdivided_faces();
+
+        const auto& search_stats = engine.get_bound_statistics();
+        bound_stats.u0_calls += search_stats.u0_calls;
+        bound_stats.u1_calls += search_stats.u1_calls;
+        bound_stats.u2_calls += search_stats.u2_calls;
+        bound_stats.u3_calls += search_stats.u3_calls;
+        bound_stats.u4_calls += search_stats.u4_calls;
+
         time_taken_bounds = 1000.0 * (std::chrono::duration<double>(
             std::chrono::system_clock::now().time_since_epoch()).count() - bvh_end_time);
 
@@ -92,6 +102,15 @@ PompeiuHausdorff::PompeiuHausdorff(
         upper_max = engine.get_upper_bound();
         number_of_vertices = engine.get_number_of_vertices();
         number_of_faces = engine.get_number_of_faces();
+        subdivided_faces = engine.get_subdivided_faces();
+
+        const auto& search_stats = engine.get_bound_statistics();
+        bound_stats.u0_calls += search_stats.u0_calls;
+        bound_stats.u1_calls += search_stats.u1_calls;
+        bound_stats.u2_calls += search_stats.u2_calls;
+        bound_stats.u3_calls += search_stats.u3_calls;
+        bound_stats.u4_calls += search_stats.u4_calls;
+
         time_taken_bounds = 1000.0 * (std::chrono::duration<double>(
             std::chrono::system_clock::now().time_since_epoch()).count() - bvh_end_time);
     } else {

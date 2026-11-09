@@ -166,9 +166,13 @@ double evaluate_cascading_bound_for_triangle(
     const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
     double lower,
     int& successful_bound_index,
-    KangWorkspace* workspace)
+    KangWorkspace* workspace,
+    BoundCallStatistics* stats)
 {
     if (has_identical_projections(projection_indices(0), projection_indices(1), projection_indices(2))) {
+        if (stats != nullptr) {
+            stats->u0_calls++;
+        }
         successful_bound_index = 0;
         return compute_exact_bound(vertex_distances);
     }
@@ -181,12 +185,18 @@ double evaluate_cascading_bound_for_triangle(
         ).norm();
     }
 
+    if (stats != nullptr) {
+        stats->u1_calls++;
+    }
     double current_bound = compute_first_bound(vertex_distances, edge_lengths);
     if (current_bound < lower) {
         successful_bound_index = 1;
         return current_bound;
     }
 
+    if (stats != nullptr) {
+        stats->u2_calls++;
+    }
     const double second_bound = compute_second_bound(vertex_distances, edge_lengths);
     current_bound = std::min(current_bound, second_bound);
     if (current_bound < lower) {
@@ -194,6 +204,9 @@ double evaluate_cascading_bound_for_triangle(
         return current_bound;
     }
 
+    if (stats != nullptr) {
+        stats->u3_calls++;
+    }
     const double third_bound = (workspace != nullptr)
         ? compute_third_bound(triangle_vertices, vertex_distances, projection_indices, VB, FB, *workspace)
         : compute_third_bound(triangle_vertices, vertex_distances, projection_indices, VB, FB);
@@ -203,6 +216,9 @@ double evaluate_cascading_bound_for_triangle(
         return current_bound;
     }
 
+    if (stats != nullptr) {
+        stats->u4_calls++;
+    }
     const double fourth_bound = compute_fourth_bound(
         triangle_vertices,
         closest_points,
@@ -228,7 +244,8 @@ int evaluate_cascading_bounds(
     double lower,
     Eigen::VectorXd& upper_bounds_out,
     Eigen::VectorXi& success_bound_out,
-    KangWorkspace* workspace)
+    KangWorkspace* workspace,
+    BoundCallStatistics* stats)
 {
     if (upper_bounds_out.rows() != FA.rows()) {
         std::cerr << "geometric_bounds: Output upper bound vector dimension mismatch" << std::endl;
@@ -239,7 +256,7 @@ int evaluate_cascading_bounds(
         KangWorkspace local_workspace;
         return evaluate_cascading_bounds(
             VA, FA, VB, FB, DV, I, C, lower,
-            upper_bounds_out, success_bound_out, &local_workspace);
+            upper_bounds_out, success_bound_out, &local_workspace, stats);
     }
 
     KangWorkspace& active_workspace = *workspace;
@@ -272,7 +289,8 @@ int evaluate_cascading_bounds(
             FB,
             lower,
             bound_indicator,
-            &active_workspace);
+            &active_workspace,
+            stats);
         success_bound_out(face_idx) = bound_indicator;
     }
 
