@@ -203,10 +203,11 @@ def run_single_profile(
         print(f"Distance Bounds:   [{record['lower']:.8f}, {record['upper_max']:.8f}]")
         print("-" * 50)
 
-    if process.returncode != 1 and process.returncode != 0:
-        print(f"[WARNING] Process returned non-zero code {process.returncode}")
-        if stderr.strip():
-            print(f"[STDERR]\n{stderr.strip()}")
+    if process.returncode != 1:
+        details = stderr.strip() or stdout.strip()
+        raise RuntimeError(
+            f"Profiling failed (exit code {process.returncode}): {details}"
+        )
 
     return record
 
