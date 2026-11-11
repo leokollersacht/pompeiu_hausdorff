@@ -243,7 +243,9 @@ void IDAStarEngine::search()
     while (upper_max_ - lower_ > tol_scaled) {
         const double gap = upper_max_ - lower_;
         const double threshold_step = std::max(tol_scaled, gap * 0.25);
-        const double current_threshold = upper_max_ - threshold_step;
+        const double current_threshold = std::min(
+            upper_max_ - threshold_step,
+            std::nextafter(upper_max_, -std::numeric_limits<double>::infinity()));
 
         double next_threshold = -std::numeric_limits<double>::infinity();
 
