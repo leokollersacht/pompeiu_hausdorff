@@ -162,6 +162,17 @@ def run_single_profile(
 
     parsed_metrics = parse_binary_stdout(stdout)
 
+    required_counters = (
+        "subdivided_faces", "u0_calls", "u1_calls", "u2_calls", "u3_calls", "u4_calls"
+    )
+    missing_counters = [name for name in required_counters if name not in parsed_metrics]
+    if process.returncode == 1 and missing_counters:
+        raise RuntimeError(
+            "Binary did not emit required profiling counters: "
+            + ", ".join(missing_counters)
+            + ". Rebuild the executable with telemetry support."
+        )
+
     record = {
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "mesh_a": os.path.basename(mesh_a),
