@@ -1,6 +1,7 @@
 #include "BestFirstEngine.h"
 #include "geometric_bounds.h"
 #include "subdivision.h"
+#include "telemetry.h"
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -59,6 +60,9 @@ void BestFirstEngine::search()
     const double start_time = std::chrono::duration<double>(
         std::chrono::system_clock::now().time_since_epoch()).count();
 
+    uint64_t subdivided_faces = 0;
+    phd::geometry::BoundCallStatistics search_bound_stats;
+
     const int max_allowed_vertices = (context_.max_factor * context_.VA.rows() < INT_MAX)
         ? static_cast<int>(context_.max_factor * context_.VA.rows())
         : INT_MAX;
@@ -104,6 +108,7 @@ void BestFirstEngine::search()
 
         const auto subdivision_result = phd::geometry::subdivide_triangle_1_to_4(
             vertex_0, vertex_1, vertex_2);
+        subdivided_faces++;
 
         VA_aug_.block(number_of_vertices_, 0, 3, 3) = subdivision_result.midpoints;
 
@@ -168,7 +173,8 @@ void BestFirstEngine::search()
                 lower_,
                 upper_new,
                 success_bound_new,
-                &kang_workspace_)) {
+                &kang_workspace_,
+                &search_bound_stats)) {
             throw std::runtime_error("error in upper bound function");
         }
 
@@ -194,6 +200,8 @@ void BestFirstEngine::search()
     const double end_time = std::chrono::duration<double>(
         std::chrono::system_clock::now().time_since_epoch()).count();
     bound_time_ms_ = 1000.0 * (end_time - start_time);
+
+    phd::telemetry::record_search_metrics(subdivided_faces, search_bound_stats);
 }
 
 double BestFirstEngine::get_lower_bound() const

@@ -72,6 +72,17 @@ struct KangWorkspace {
 };
 
 /**
+ * @brief Statistics tracking the invocation counts of each upper bound function.
+ */
+struct BoundCallStatistics {
+    uint64_t u0_calls = 0; // compute_exact_bound
+    uint64_t u1_calls = 0; // compute_first_bound
+    uint64_t u2_calls = 0; // compute_second_bound
+    uint64_t u3_calls = 0; // compute_third_bound
+    uint64_t u4_calls = 0; // compute_fourth_bound
+};
+
+/**
  * @brief Computes ThirdBound (u3) using Kang et al.'s continuous upper bound projection.
  *
  * @param triangle_vertices Coordinates of the 3 triangle vertices (3x3 row-major matrix).
@@ -137,6 +148,18 @@ double evaluate_cascading_bound_for_triangle(
     int& successful_bound_index,
     KangWorkspace* workspace = nullptr);
 
+double evaluate_cascading_bound_for_triangle(
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& triangle_vertices,
+    const Eigen::Vector3d& vertex_distances,
+    const Eigen::Vector3i& projection_indices,
+    const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>& closest_points,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    double lower,
+    int& successful_bound_index,
+    KangWorkspace* workspace,
+    BoundCallStatistics* stats);
+
 /**
  * @brief Batch evaluation of cascading upper bounds for all faces in mesh A.
  *
@@ -154,6 +177,20 @@ int evaluate_cascading_bounds(
     Eigen::VectorXd& upper_bounds_out,
     Eigen::VectorXi& success_bound_out,
     KangWorkspace* workspace = nullptr);
+
+int evaluate_cascading_bounds(
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VA,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FA,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    const Eigen::VectorXd& DV,
+    const Eigen::VectorXi& I,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& C,
+    double lower,
+    Eigen::VectorXd& upper_bounds_out,
+    Eigen::VectorXi& success_bound_out,
+    KangWorkspace* workspace,
+    BoundCallStatistics* stats);
 
 } // namespace geometry
 } // namespace phd

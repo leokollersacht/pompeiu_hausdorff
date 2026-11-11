@@ -2,6 +2,7 @@
 #include "BestFirstEngine.h"
 #include "IDAStarEngine.h"
 #include "geometric_bounds.h"
+#include "telemetry.h"
 #include <chrono>
 #include <cmath>
 #include <stdexcept>
@@ -56,14 +57,20 @@ PompeiuHausdorff::PompeiuHausdorff(
     initial_DV = initial_DV.cwiseSqrt();
     const double initial_lower = initial_DV.maxCoeff();
 
+    phd::telemetry::reset_telemetry();
+
     // Initial cascading upper bounds calculation for all faces
+    phd::geometry::BoundCallStatistics initial_bound_stats;
+
     Eigen::VectorXi initial_success_bound(FA.rows());
     Eigen::VectorXd initial_upper(FA.rows());
     if (!phd::geometry::evaluate_cascading_bounds(
             VA, FA, VB, FB, initial_DV, initial_I, initial_C,
-            initial_lower, initial_upper, initial_success_bound)) {
+            initial_lower, initial_upper, initial_success_bound,
+            nullptr, &initial_bound_stats)) {
         throw std::runtime_error("error in upper bound function");
     }
+    phd::telemetry::record_initial_bounds(initial_bound_stats);
 
     // Prepare search context and execute the Best-First search engine
     phd::search::SearchContext search_context(
@@ -80,6 +87,7 @@ PompeiuHausdorff::PompeiuHausdorff(
         upper_max = engine.get_upper_bound();
         number_of_vertices = engine.get_number_of_vertices();
         number_of_faces = engine.get_number_of_faces();
+
         time_taken_bounds = 1000.0 * (std::chrono::duration<double>(
             std::chrono::system_clock::now().time_since_epoch()).count() - bvh_end_time);
 
@@ -92,6 +100,7 @@ PompeiuHausdorff::PompeiuHausdorff(
         upper_max = engine.get_upper_bound();
         number_of_vertices = engine.get_number_of_vertices();
         number_of_faces = engine.get_number_of_faces();
+
         time_taken_bounds = 1000.0 * (std::chrono::duration<double>(
             std::chrono::system_clock::now().time_since_epoch()).count() - bvh_end_time);
     } else {

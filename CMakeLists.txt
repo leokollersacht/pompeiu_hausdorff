@@ -26,6 +26,7 @@ add_library(${LIBRARY_NAME} STATIC
   src/subdivision.cpp
   src/BestFirstEngine.cpp
   src/IDAStarEngine.cpp
+  src/telemetry.cpp
   src/kang_upper_bound.cpp
   src/kang_intersect_edge_and_bisector.cpp
   src/bisector_of_two_points.cpp)
