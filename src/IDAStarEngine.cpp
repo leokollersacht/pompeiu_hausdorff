@@ -68,7 +68,7 @@ void dfs_branch(
 
     // 4. Safety limits on recursion depth and total elements
     if (depth >= ctx.max_depth) {
-        return;
+        throw std::runtime_error("Exceeded maximum recursion depth before satisfying tolerance");
     }
     if (ctx.number_of_vertices + 3 > ctx.max_allowed_vertices ||
         ctx.number_of_faces + 4 > ctx.max_allowed_faces) {
