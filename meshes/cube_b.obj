@@ -1,0 +1,31 @@
+# Cube B - Translated unit cube [0.5, 1.5] x [0, 1] x [0, 1]
+# Translated along X by dx = 0.5 relative to Cube A
+# Predefined Pompeiu-Hausdorff distance to Cube A: d_H = 0.5
+# Vertices
+v 0.5 0.0 0.0
+v 1.5 0.0 0.0
+v 1.5 1.0 0.0
+v 0.5 1.0 0.0
+v 0.5 0.0 1.0
+v 1.5 0.0 1.0
+v 1.5 1.0 1.0
+v 0.5 1.0 1.0
+# Faces (triangulated, outward normals)
+# Bottom (z = 0)
+f 1 4 3
+f 1 3 2
+# Top (z = 1)
+f 5 6 7
+f 5 7 8
+# Front (y = 0)
+f 1 2 6
+f 1 6 5
+# Back (y = 1)
+f 4 8 7
+f 4 7 3
+# Left (x = 0.5)
+f 1 5 8
+f 1 8 4
+# Right (x = 1.5)
+f 2 3 7
+f 2 7 6
