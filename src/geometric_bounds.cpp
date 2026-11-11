@@ -349,5 +349,58 @@ int evaluate_cascading_bounds(
     return 1;
 }
 
+int evaluate_cascading_bounds(
+    const Eigen::Matrix<double, 6, 3, Eigen::RowMajor>& VA,
+    const Eigen::Matrix<int, 4, 3, Eigen::RowMajor>& FA,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    const Eigen::Matrix<double, 6, 1>& DV,
+    const Eigen::Matrix<int, 6, 1>& I,
+    const Eigen::Matrix<double, 6, 3, Eigen::RowMajor>& C,
+    double lower,
+    Eigen::Vector4d& upper_bounds_out,
+    Eigen::Vector4i& success_bound_out,
+    KangWorkspace* workspace,
+    BoundCallStatistics* stats)
+{
+    KangWorkspace local_workspace;
+    KangWorkspace& active_workspace = (workspace != nullptr) ? *workspace : local_workspace;
+
+    for (int face_idx = 0; face_idx < 4; ++face_idx) {
+        const int v0_idx = FA(face_idx, 0);
+        const int v1_idx = FA(face_idx, 1);
+        const int v2_idx = FA(face_idx, 2);
+
+        Eigen::Matrix<double, 3, 3, Eigen::RowMajor> triangle_vertices;
+        triangle_vertices.row(0) = VA.row(v0_idx);
+        triangle_vertices.row(1) = VA.row(v1_idx);
+        triangle_vertices.row(2) = VA.row(v2_idx);
+
+        Eigen::Vector3d vertex_distances(DV(v0_idx), DV(v1_idx), DV(v2_idx));
+        Eigen::Vector3i projection_indices(I(v0_idx), I(v1_idx), I(v2_idx));
+
+        Eigen::Matrix<double, 3, 3, Eigen::RowMajor> closest_points;
+        closest_points.row(0) = C.row(v0_idx);
+        closest_points.row(1) = C.row(v1_idx);
+        closest_points.row(2) = C.row(v2_idx);
+
+        int bound_indicator = 5;
+        upper_bounds_out(face_idx) = evaluate_cascading_bound_for_triangle(
+            triangle_vertices,
+            vertex_distances,
+            projection_indices,
+            closest_points,
+            VB,
+            FB,
+            lower,
+            bound_indicator,
+            &active_workspace,
+            stats);
+        success_bound_out(face_idx) = bound_indicator;
+    }
+
+    return 1;
+}
+
 } // namespace geometry
 } // namespace phd

@@ -192,6 +192,25 @@ int evaluate_cascading_bounds(
     KangWorkspace* workspace,
     BoundCallStatistics* stats);
 
+/**
+ * @brief Fixed-size overload for evaluating cascading upper bounds for 4 subdivided child faces.
+ *
+ * Avoids any heap allocation by using fixed-size stack matrices.
+ */
+int evaluate_cascading_bounds(
+    const Eigen::Matrix<double, 6, 3, Eigen::RowMajor>& VA,
+    const Eigen::Matrix<int, 4, 3, Eigen::RowMajor>& FA,
+    const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>& VB,
+    const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>& FB,
+    const Eigen::Matrix<double, 6, 1>& DV,
+    const Eigen::Matrix<int, 6, 1>& I,
+    const Eigen::Matrix<double, 6, 3, Eigen::RowMajor>& C,
+    double lower,
+    Eigen::Vector4d& upper_bounds_out,
+    Eigen::Vector4i& success_bound_out,
+    KangWorkspace* workspace = nullptr,
+    BoundCallStatistics* stats = nullptr);
+
 } // namespace geometry
 } // namespace phd
 

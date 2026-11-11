@@ -83,15 +83,14 @@ void dfs_branch(
     ctx.number_of_faces += 4;
 
     // Query spatial distance on mesh B for midpoints
-    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> VA_mid_query = subdivision_result.midpoints;
-    Eigen::VectorXd DV_mid(3);
-    Eigen::VectorXi I_mid(3);
-    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> C_mid(3, 3);
+    Eigen::Vector3d DV_mid;
+    Eigen::Vector3i I_mid;
+    Eigen::Matrix<double, 3, 3, Eigen::RowMajor> C_mid;
 
     ctx.search_context.treeB.squared_distance(
         ctx.search_context.VB,
         ctx.search_context.FB,
-        VA_mid_query,
+        subdivision_result.midpoints,
         DV_mid,
         I_mid,
         C_mid);
@@ -100,34 +99,34 @@ void dfs_branch(
     // Monotonically increase global lower bound
     ctx.lower = std::max(ctx.lower, DV_mid.maxCoeff());
 
-    // Prepare 6-point evaluation blocks for the 4 local subfaces
-    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> VA_eval(6, 3);
-    Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor> C_eval(6, 3);
-    Eigen::VectorXd DV_eval(6);
-    Eigen::VectorXi I_eval(6);
+    // Prepare 6-point evaluation blocks for the 4 local subfaces using fixed-size stack buffers
+    Eigen::Matrix<double, 6, 3, Eigen::RowMajor> VA_eval;
+    Eigen::Matrix<double, 6, 3, Eigen::RowMajor> C_eval;
+    Eigen::Matrix<double, 6, 1> DV_eval;
+    Eigen::Matrix<int, 6, 1> I_eval;
 
     VA_eval.row(0) = node.V.row(0);
     VA_eval.row(1) = node.V.row(1);
     VA_eval.row(2) = node.V.row(2);
-    VA_eval.block(3, 0, 3, 3) = subdivision_result.midpoints;
+    VA_eval.block<3, 3>(3, 0) = subdivision_result.midpoints;
 
     C_eval.row(0) = node.C.row(0);
     C_eval.row(1) = node.C.row(1);
     C_eval.row(2) = node.C.row(2);
-    C_eval.block(3, 0, 3, 3) = C_mid;
+    C_eval.block<3, 3>(3, 0) = C_mid;
 
     DV_eval(0) = node.DV(0);
     DV_eval(1) = node.DV(1);
     DV_eval(2) = node.DV(2);
-    DV_eval.segment(3, 3) = DV_mid;
+    DV_eval.segment<3>(3) = DV_mid;
 
     I_eval(0) = node.I(0);
     I_eval(1) = node.I(1);
     I_eval(2) = node.I(2);
-    I_eval.segment(3, 3) = I_mid;
+    I_eval.segment<3>(3) = I_mid;
 
-    Eigen::VectorXd upper_children(4);
-    Eigen::VectorXi success_children(4);
+    Eigen::Vector4d upper_children;
+    Eigen::Vector4i success_children;
 
     if (!phd::geometry::evaluate_cascading_bounds(
             VA_eval,
@@ -230,6 +229,10 @@ void IDAStarEngine::search()
 
     // Main Iterative Deepening loop
     while (upper_max_ - lower_ > tol_scaled) {
+        // Reset per-iteration instantiated element counters to avoid artificial limit exhaustion across thresholds
+        number_of_vertices_ = context_.VA.rows();
+        number_of_faces_ = context_.FA.rows();
+
         const double gap = upper_max_ - lower_;
         const double threshold_step = std::max(tol_scaled, gap * 0.25);
         const double current_threshold = std::min(
