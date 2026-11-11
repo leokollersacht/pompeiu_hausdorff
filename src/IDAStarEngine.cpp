@@ -60,6 +60,9 @@ void dfs_branch(
 
     // 3. Stopping criterion: tolerance satisfied for this triangle
     if (node.upper_bound - ctx.lower <= ctx.tol_scaled) {
+        if (node.upper_bound > next_threshold) {
+            next_threshold = node.upper_bound;
+        }
         return;
     }
 
