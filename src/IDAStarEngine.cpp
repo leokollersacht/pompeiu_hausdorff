@@ -201,29 +201,18 @@ void IDAStarEngine::search()
         : INT_MAX;
     const int max_depth = 100;
 
-    // Collect initial active root faces
-    std::vector<TriangleNode> root_nodes;
-    root_nodes.reserve(context_.FA.rows());
-    for (int f = 0; f < context_.FA.rows(); ++f) {
-        if (context_.initial_upper(f) >= lower_) {
-            TriangleNode node;
-            for (int k = 0; k < 3; ++k) {
-                const int v_idx = context_.FA(f, k);
-                node.V.row(k) = context_.VA.row(v_idx);
-                node.DV(k) = context_.initial_DV(v_idx);
-                node.I(k) = context_.initial_I(v_idx);
-                node.C.row(k) = context_.initial_C.row(v_idx);
-            }
-            node.upper_bound = context_.initial_upper(f);
-            root_nodes.push_back(node);
+    auto construct_root_node = [&](int f) -> TriangleNode {
+        TriangleNode node;
+        for (int k = 0; k < 3; ++k) {
+            const int v_idx = context_.FA(f, k);
+            node.V.row(k) = context_.VA.row(v_idx);
+            node.DV(k) = context_.initial_DV(v_idx);
+            node.I(k) = context_.initial_I(v_idx);
+            node.C.row(k) = context_.initial_C.row(v_idx);
         }
-    }
-
-    // Sort initial faces by upper bound in descending order
-    std::sort(root_nodes.begin(), root_nodes.end(),
-        [](const TriangleNode& a, const TriangleNode& b) {
-            return a.upper_bound > b.upper_bound;
-        });
+        node.upper_bound = context_.initial_upper(f);
+        return node;
+    };
 
     DfsContext ctx = {
         context_,
@@ -249,10 +238,18 @@ void IDAStarEngine::search()
 
         double next_threshold = -std::numeric_limits<double>::infinity();
 
-        for (const auto& root_node : root_nodes) {
-            if (root_node.upper_bound < lower_) {
+        for (int f = 0; f < context_.FA.rows(); ++f) {
+            if (context_.initial_upper(f) < lower_) {
                 continue;
             }
+            if (context_.initial_upper(f) <= current_threshold) {
+                if (context_.initial_upper(f) > next_threshold) {
+                    next_threshold = context_.initial_upper(f);
+                }
+                continue;
+            }
+
+            TriangleNode root_node = construct_root_node(f);
             dfs_branch(
                 ctx,
                 root_node,
