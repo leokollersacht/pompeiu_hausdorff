@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <tuple>
+#include "DistanceSearchEngine.h"
 
 /// Compute lower and upper bounds on the Pompeiu-Hausdorff distance between two
 /// meshes A and B
@@ -26,3 +27,20 @@ pompeiu_hausdorff(
   const double tol = 1e-8,
   const double max_factor = 1000000,
   const bool normalize = true);
+
+/// @param[in] engine_type Search engine implementation
+std::tuple<
+  double /* lower */,
+  double /* upper */,
+  double /* dA */,
+  double /* time_taken_bvh */,
+  double /* time_taken_bounds */>
+pompeiu_hausdorff(
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VA,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FA,
+  const Eigen::Matrix<double,Eigen::Dynamic,3,Eigen::RowMajor> & VB,
+  const Eigen::Matrix<int,Eigen::Dynamic,3,Eigen::RowMajor> & FB,
+  const double tol,
+  const double max_factor,
+  const bool normalize,
+  const phd::search::SearchEngineType engine_type);

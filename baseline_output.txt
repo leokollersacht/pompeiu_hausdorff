@@ -1,0 +1,23 @@
+============================================================
+CHECKPOINT 1 - EVIDÊNCIA DE EXECUÇÃO DE BASELINE
+Artigo: Cascading upper bounds for triangle soup Pompeiu-Hausdorff distance
+Data e Hora: 2026-11-08 17:29:23
+Comando executado: /home/stefo/projects/pompeiu_hausdorff/build/pompeiu_hausdorff /home/stefo/projects/pompeiu_hausdorff/meshes/107100.obj /home/stefo/projects/pompeiu_hausdorff/meshes/107100_sf.obj 1e-4 1000000 1
+Tempo total de parede (wall-clock): 3.1170s
+Código de retorno do processo: 1
+============================================================
+
+--- [SAÍDA PADRÃO (STDOUT)] ---
+Computing Pompeiu-Hausdorff distance...
+Done.
+----- Results -----
+dA = 83.340384836604
+lower=0.073072619899
+upper_max=0.081406527240
+lower/dA=0.000876797246
+upper_max/dA=0.000976795672
+bvh_time(ms)=25.563955307007
+bound_time(ms)=2949.260950088501
+----------------------------------------
+
+============================================================

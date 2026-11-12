@@ -6,6 +6,8 @@
 #include <igl/readOBJ.h>
 
 #include "src/pompeiu_hausdorff.h"
+#include "src/PompeiuHausdorff.h"
+#include "src/telemetry.h"
 // time include
 #if ! _MSC_VER
 #include <sys/time.h>
@@ -14,13 +16,19 @@
 #endif
 
 #include <chrono>
+#include <iomanip>
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-    if (argc!=6) {
-        cout << "Command line input should be two triangle soups A and B in .obj format; a tolerance value for the difference between upper and lower bounds; factor to define the maximum allowed number of faces and vertices in the subdivided mesh A with respect to the number of faces and vertices of the initial mesh A; 0 (false) or 1 (true) to normalize tolerance by the length of the diagonal of A's bounding box;" << endl;
+    if (argc != 6 && argc != 7) {
+        cout << "Usage: " << argv[0] << " meshA.obj meshB.obj tol max_factor normalize [engine]\n"
+             << "  meshA.obj, meshB.obj: triangle soups in .obj format\n"
+             << "  tol: tolerance value between upper and lower bounds\n"
+             << "  max_factor: maximum allowed factor for faces and vertices expansion\n"
+             << "  normalize: 0 (false) or 1 (true) to normalize tolerance by bounding box diagonal\n"
+             << "  engine (optional): 'best_first' (default) or 'idastar'" << endl;
         return 0;
     }
 
@@ -60,36 +68,52 @@ int main(int argc, char *argv[])
     int normalize = atoi(argv[5]);
     double max_factor = atof(argv[4]);
     double tol = atof(argv[3]);
+
+    phd::search::SearchEngineType engine_type = phd::search::SearchEngineType::BestFirst;
+    if (argc == 7) {
+        std::string engine_arg = argv[6];
+        if (engine_arg == "best_first" || engine_arg == "bestfirst") {
+            engine_type = phd::search::SearchEngineType::BestFirst;
+        } else if (engine_arg == "idastar" || engine_arg == "ida*") {
+            engine_type = phd::search::SearchEngineType::IDAStar;
+        } else {
+            std::cerr << "Error: Unknown search engine '" << engine_arg
+                      << "'. Available engines: 'best_first', 'idastar'." << std::endl;
+            return 0;
+        }
+    }
     
-    double dA;
-    double lower;
-    double upper_max;
-    double time_taken_bvh;
-    double time_taken_bounds;
     try
     {
-      std::tie(lower, upper_max, dA, time_taken_bvh, time_taken_bounds) = 
-        pompeiu_hausdorff(VA, FA, VB, FB, tol, max_factor, normalize);
+      std::cout << "Computing Pompeiu-Hausdorff distance..." << std::endl;
+      PompeiuHausdorff ph(VA, FA, VB, FB, tol, max_factor, normalize, engine_type);
+      std::cout << "Done." << std::endl;
+
+      // Adding final statistics print for benchmark and profiling
+      cout << fixed;
+      cout << setprecision(12);
+      cout << "----- Results -----" << endl;
+      cout << "dA = " << ph.dA << endl;
+      cout << "lower=" << ph.lower << endl;
+      cout << "upper_max=" << ph.upper_max << endl;
+      cout << "lower/dA=" << ph.lower / ph.dA << endl;
+      cout << "upper_max/dA=" << ph.upper_max / ph.dA << endl;
+      const auto& telemetry = phd::telemetry::get_last_execution();
+      cout << "bvh_time(ms)=" << ph.time_taken_bvh << endl;
+      cout << "bound_time(ms)=" << ph.time_taken_bounds << endl;
+      cout << "subdivided_faces=" << telemetry.subdivided_faces << endl;
+      cout << "u0_calls=" << telemetry.bound_stats.u0_calls << endl;
+      cout << "u1_calls=" << telemetry.bound_stats.u1_calls << endl;
+      cout << "u2_calls=" << telemetry.bound_stats.u2_calls << endl;
+      cout << "u3_calls=" << telemetry.bound_stats.u3_calls << endl;
+      cout << "u4_calls=" << telemetry.bound_stats.u4_calls << endl;
+      cout << "----------------------------------------" << endl;
     }
     catch (const std::exception& e)
     {
       std::cerr << "Error: " << e.what() << std::endl;
       return 0;
     }
-
-
-    // Adding final statistics print for Zheng's benchmark
-    cout << fixed;
-    cout << setprecision(12);
-    cout << "----- Results -----" << endl;
-    cout << "dA = " << dA << endl;
-    cout << "lower=" << lower << endl;
-    cout << "upper_max=" << upper_max << endl;
-    cout << "lower/dA=" << lower/dA << endl;
-    cout << "upper_max/dA=" << upper_max/dA << endl;
-    cout << "bvh_time(ms)=" << time_taken_bvh << endl;
-    cout << "bound_time(ms)=" << time_taken_bounds << endl;
-    cout << "----------------------------------------" << endl;
 
     return 1;
 }

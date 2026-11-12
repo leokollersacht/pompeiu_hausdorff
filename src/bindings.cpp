@@ -10,6 +10,11 @@ namespace nb = nanobind;
 using namespace nb::literals;
 
 NB_MODULE(cascading_upper_bounds_ext, m) {
+  nb::enum_<phd::search::SearchEngineType>(m, "SearchEngineType")
+      .value("BestFirst", phd::search::SearchEngineType::BestFirst)
+      .value("IDAStar", phd::search::SearchEngineType::IDAStar)
+      .export_values();
+
   typedef 
     std::priority_queue< std::pair< double, int > , std::vector< std::pair< double, int >  >,
     std::less< std::pair< double, int > > >
@@ -29,8 +34,8 @@ NB_MODULE(cascading_upper_bounds_ext, m) {
           const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>&,
           const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>&,
           const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>&,
-          double, double, bool>(),
-           "VA"_a, "FA"_a, "VB"_a, "FB"_a, "tol"_a=1e-8, "max_factor"_a=1000000, "normalize"_a=true)
+          double, double, bool, phd::search::SearchEngineType>(),
+           "VA"_a, "FA"_a, "VB"_a, "FB"_a, "tol"_a=1e-8, "max_factor"_a=1000000, "normalize"_a=true, "engine"_a=phd::search::SearchEngineType::BestFirst)
       .def_ro("lower", &PompeiuHausdorff::lower,"Computed lower bound of the Pompeiu-Hausdorff distance")
       .def_ro("upper_max", &PompeiuHausdorff::upper_max,"Computed upper bound of the Pompeiu-Hausdorff distance")
       .def_ro("dA", &PompeiuHausdorff::dA,"Length of the diagonal of mesh A's bounding box")
@@ -49,8 +54,18 @@ NB_MODULE(cascading_upper_bounds_ext, m) {
       ;
 
 
-  m.def("pompeiu_hausdorff", &pompeiu_hausdorff,
-      "VA"_a, "FA"_a, "VB"_a, "FB"_a, "tol"_a=1e-8, "max_factor"_a=1000000, "normalize"_a=false,
+  using PompeiuHausdorffFn = std::tuple<double, double, double, double, double>(*)(
+      const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const Eigen::Matrix<int, Eigen::Dynamic, 3, Eigen::RowMajor>&,
+      const double,
+      const double,
+      const bool,
+      const phd::search::SearchEngineType);
+
+  m.def("pompeiu_hausdorff", static_cast<PompeiuHausdorffFn>(&pompeiu_hausdorff),
+      "VA"_a, "FA"_a, "VB"_a, "FB"_a, "tol"_a=1e-8, "max_factor"_a=1000000, "normalize"_a=false, "engine"_a=phd::search::SearchEngineType::BestFirst,
       R"(Compute lower and upper bounds on the Pompeiu-Hausdorff distance between two
 meshes A and B
 
